@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropTech — Do bairro à carteira</title>
+<meta name="description" content="Como a tecnologia transforma o imóvel de tijolo em ativo financeiro — da escolha do bairro à carteira diversificada de fundos imobiliários. Deck interativo com simuladores e dados.">
+<meta name="author" content="José Edson da Costa">
+<meta name="theme-color" content="#0A0E0B">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A0E0B'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23CDFF57'/%3E%3C/svg%3E"><style>
+/* =====================================================================
+   PROPTECH — DO BAIRRO À CARTEIRA · v3 "LÍQUIDA"
+   uma cor trabalha por tudo · um campo escuro contínuo · nada de caixas
+   ===================================================================== */
+:root{
+  --bg:#0A0E0B;            /* campo contínuo */
+  --bg2:#0D1210;
+  --srf:rgba(255,255,255,.032);
+  --srf2:rgba(255,255,255,.055);
+  --ln:rgba(255,255,255,.075);
+  --ln2:rgba(255,255,255,.14);
+  --txt:#F2F5EE;           /* tinta */
+  --txt2:rgba(242,245,238,.62);
+  --mut:#8B9987;           /* folha */
+  --mut2:#5F6B5D;
+  --lime:#CDFF57;          /* a assinatura */
+  --lime2:#E4FF9C;
+  --lime-soft:rgba(205,255,87,.1);
+  --amber:#FFB454;
+  --ember:#FF6B57;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --r:24px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--txt);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;line-height:1.6;font-size:16px}
+::selection{background:var(--lime);color:#0A0E0B}
+img{max-width:100%;display:block}
+a{color:inherit}
+
+/* ---------- a luz que deriva (fluidez) ---------- */
+.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(110px);opacity:.14;will-change:transform}
+.orb.a{width:56vw;height:56vw;background:radial-gradient(circle,#CDFF57 0%,transparent 65%);top:-22vw;right:-16vw;animation:drift1 46s ease-in-out infinite alternate}
+.orb.b{width:44vw;height:44vw;background:radial-gradient(circle,#3E5C3A 0%,transparent 65%);bottom:-18vw;left:-14vw;animation:drift2 58s ease-in-out infinite alternate}
+.orb.c{width:34vw;height:34vw;background:radial-gradient(circle,#CDFF57 0%,transparent 70%);top:58%;left:52%;opacity:.06;animation:drift3 64s ease-in-out infinite alternate}
+@keyframes drift1{from{transform:translate(0,0) scale(1)}to{transform:translate(-9vw,7vw) scale(1.12)}}
+@keyframes drift2{from{transform:translate(0,0) scale(1)}to{transform:translate(8vw,-6vw) scale(1.08)}}
+@keyframes drift3{from{transform:translate(0,0)}to{transform:translate(-10vw,-8vw)}}
+@media (prefers-reduced-motion:reduce){.orb{animation:none}}
+
+/* ---------- topbar ---------- */
+#topbar{position:fixed;top:0;left:0;right:0;z-index:1000;border-bottom:1px solid transparent;transition:all .4s ease}
+#topbar.scrolled{background:rgba(10,14,11,.72);backdrop-filter:blur(18px) saturate(1.3);border-bottom-color:var(--ln)}
+.tb-in{max-width:1140px;margin:0 auto;padding:0 clamp(20px,3vw,36px);height:64px;display:flex;align-items:center;gap:24px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;letter-spacing:-.02em;font-size:15px;white-space:nowrap}
+.logo .mark{width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 14px rgba(205,255,87,.8);flex-shrink:0}
+.logo em{font-style:normal;color:var(--mut);font-weight:500}
+.tb-links{display:flex;gap:4px;margin-left:auto}
+.tb-links a{font-size:13.5px;font-weight:500;color:var(--txt2);text-decoration:none;padding:8px 14px;border-radius:99px;transition:all .25s}
+.tb-links a:hover{color:var(--txt);background:var(--srf)}
+.tb-cta{font-size:13px;font-weight:650;text-decoration:none;background:var(--lime);color:#0A0E0B;
+  padding:9px 20px;border-radius:99px;margin-left:8px;transition:all .25s;white-space:nowrap}
+.tb-cta:hover{background:var(--lime2);transform:translateY(-1px)}
+@media(max-width:900px){.tb-links{display:none}}
+@media(max-width:430px){.logo em{display:none}.tb-in{gap:14px}}
+#progress{position:fixed;top:0;left:0;height:2px;width:0%;z-index:1001;background:var(--lime);transition:width .1s linear}
+
+/* ---------- seções ---------- */
+main{position:relative;z-index:1}
+section{position:relative;padding:clamp(88px,12vh,150px) 0;scroll-margin-top:64px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 clamp(20px,3vw,36px)}
+.kicker{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--lime);font-weight:600;margin-bottom:26px}
+.kicker::before{content:"";width:26px;height:1.5px;background:var(--lime)}
+.kicker .n{color:var(--mut2)}
+h2{font-size:clamp(32px,4.6vw,58px);line-height:1.04;letter-spacing:-.04em;font-weight:650;margin-bottom:20px;max-width:820px}
+h2 em{font-style:normal;color:var(--lime)}
+.lead{font-size:clamp(15.5px,1.35vw,18px);color:var(--txt2);max-width:680px;line-height:1.7}
+.lead b{color:var(--txt);font-weight:600}
+.note{font-size:12px;color:var(--mut2);margin-top:18px;display:flex;gap:9px;align-items:flex-start;line-height:1.55}
+.note::before{content:"—";color:var(--mut2);flex-shrink:0}
+.sechead{margin-bottom:clamp(40px,6vh,64px);position:relative}
+/* numeral-fantasma — o marco do percurso */
+.ghost{position:absolute;top:-.28em;right:-.05em;font-family:var(--mono);font-size:clamp(110px,16vw,220px);
+  font-weight:700;color:rgba(255,255,255,.035);line-height:1;letter-spacing:-.06em;pointer-events:none;user-select:none;z-index:0}
+.sechead>*{position:relative;z-index:1}
+
+/* ---------- reveal ---------- */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .65s cubic-bezier(.2,.65,.25,1),transform .65s cubic-bezier(.2,.65,.25,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.06s}.rv.d2{transition-delay:.12s}.rv.d3{transition-delay:.18s}
+.rv.d4{transition-delay:.24s}.rv.d5{transition-delay:.3s}.rv.d6{transition-delay:.36s}.rv.d7{transition-delay:.42s}
+
+/* ---------- conteúdo sem caixas ---------- */
+.grid{display:grid;gap:clamp(28px,3vw,44px)}
+.grid>*{min-width:0}
+.chart{min-width:0}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.g21{grid-template-columns:1.4fr .85fr}.g12{grid-template-columns:.85fr 1.4fr}
+.blk{position:relative;padding-left:22px}
+.blk::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:1.5px;background:var(--ln2);border-radius:2px;transition:background .3s}
+.blk:hover::before{background:var(--lime)}
+.blk .bn{font-family:var(--mono);font-size:10px;color:var(--mut);letter-spacing:.22em;margin-bottom:8px;text-transform:uppercase}
+.blk h3{font-size:17px;font-weight:650;letter-spacing:-.015em;margin-bottom:6px}
+.blk p{font-size:14px;color:var(--txt2);line-height:1.65}
+.blk p b{color:var(--txt);font-weight:600}
+
+.stat .v{font-size:clamp(32px,3.4vw,46px);font-weight:700;letter-spacing:-.045em;font-variant-numeric:tabular-nums;line-height:1.05;color:var(--lime)}
+.stat .v.wh{color:var(--txt)}
+.stat .l{font-size:13px;color:var(--mut);margin-top:8px;line-height:1.5;max-width:240px}
+
+.quote{margin-top:clamp(44px,7vh,72px);max-width:820px;font-size:clamp(20px,2.4vw,28px);font-weight:600;letter-spacing:-.02em;line-height:1.45}
+.quote::before{content:"— ";color:var(--lime)}
+.quote small{display:block;margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--mut2)}
+
+ul.list{list-style:none;display:flex;flex-direction:column;gap:16px}
+ul.list li{display:flex;gap:14px;font-size:15px;color:var(--txt2);line-height:1.65}
+ul.list li b{color:var(--txt);font-weight:600}
+ul.list li::before{content:"→";color:var(--lime);flex-shrink:0;font-size:13px;margin-top:3px}
+ul.list.check li::before{content:"✓"}
+ul.list.x li::before{content:"✕";color:var(--ember)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:8px}
+.tbl-scroll table{min-width:620px}
+.tbl-scroll .scroll-hint{display:none}
+@media(max-width:700px){.tbl-scroll .scroll-hint{display:block;font-family:var(--mono);font-size:9.5px;color:var(--mut2);letter-spacing:.2em;text-transform:uppercase;margin-bottom:10px}}
+.hm-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -20px;padding:0 20px}
+.hm-wrap .hm{min-width:540px}
+th{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-align:left;
+  padding:0 18px 14px;font-weight:600;font-family:var(--mono);border-bottom:1px solid var(--ln2)}
+td{padding:16px 18px;border-bottom:1px solid var(--ln);color:var(--txt2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td:first-child{color:var(--txt);font-weight:600}
+.tbl{margin-top:8px}
+.pill{display:inline-block;font-size:10.5px;font-family:var(--mono);border-radius:99px;padding:3px 11px;border:1px solid;font-weight:600;letter-spacing:.04em}
+.pill.ok{color:var(--lime);border-color:rgba(205,255,87,.3);background:var(--lime-soft)}
+.pill.mid{color:var(--amber);border-color:rgba(255,180,84,.3);background:rgba(255,180,84,.07)}
+.pill.hot{color:var(--ember);border-color:rgba(255,107,87,.3);background:rgba(255,107,87,.07)}
+
+/* ---------- HERO ---------- */
+#hero{min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;padding:130px 0 0;overflow:hidden}
+#hero .bg{position:absolute;inset:-12% 0 0;background:url("assets/hero-city.jpg") center 32%/cover no-repeat;will-change:transform;animation:kb 26s ease-in-out infinite alternate}
+@keyframes kb{from{background-size:cover}to{background-size:112% 112%;background-position:center 40%}}
+@media(prefers-reduced-motion:reduce){#hero .bg{animation:none}}
+#hero .bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(10,14,11,.78) 0%,rgba(10,14,11,.5) 34%,rgba(10,14,11,.9) 78%,var(--bg) 100%)}
+#hero .bg::before{content:"";position:absolute;inset:0;z-index:1;mix-blend-mode:overlay;
+  background:radial-gradient(80vw 42vw at 72% 20%,rgba(205,255,87,.16),transparent 65%)}
+#hero .wrap{position:relative;z-index:2;padding-bottom:clamp(48px,7vh,84px)}
+.hero-badge{display:inline-flex;align-items:center;gap:11px;font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--txt2);margin-bottom:34px}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime);animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+#hero h1{font-size:clamp(48px,8vw,116px);line-height:.97;letter-spacing:-.05em;font-weight:700;max-width:980px}
+#hero h1 em{font-style:normal;color:var(--lime)}
+#hero .sub{font-size:clamp(16px,1.8vw,20px);color:var(--txt2);max-width:640px;margin-top:30px;line-height:1.65}
+#hero .sub b{color:var(--txt);font-weight:600}
+.hero-ctas{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap}
+.btn{font-size:15px;font-weight:650;text-decoration:none;border-radius:99px;padding:16px 32px;transition:all .3s cubic-bezier(.2,.65,.25,1);
+  display:inline-flex;align-items:center;gap:10px;cursor:pointer;border:none;font-family:var(--sans)}
+.btn.p{background:var(--lime);color:#0A0E0B}
+.btn.p:hover{background:var(--lime2);transform:translateY(-2px);box-shadow:0 16px 44px -14px rgba(205,255,87,.45)}
+.btn.s{color:var(--txt);border:1px solid var(--ln2)}
+.btn.s:hover{border-color:rgba(255,255,255,.3);background:var(--srf)}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(24px,3vw,40px);
+  margin-top:clamp(44px,7vh,72px);padding-top:30px;border-top:1px solid var(--ln)}
+.scrollcue{position:absolute;bottom:130px;right:clamp(20px,3vw,36px);z-index:3;display:flex;flex-direction:column;align-items:center;gap:12px;
+  color:var(--mut2);font-family:var(--mono);font-size:9.5px;letter-spacing:.34em;writing-mode:vertical-rl}
+.scrollcue .wheel{width:20px;height:34px;border:1.5px solid var(--ln2);border-radius:11px;position:relative}
+.scrollcue .wheel::after{content:"";position:absolute;left:50%;top:6px;width:2.5px;height:6px;border-radius:2px;background:var(--lime);
+  transform:translateX(-50%);animation:drop 1.9s infinite}
+@keyframes drop{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,13px)}}
+
+/* ---------- letreiro ---------- */
+.ticker{position:relative;z-index:2;border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);overflow:hidden;padding:16px 0;background:rgba(255,255,255,.014)}
+.ticker .track{display:flex;white-space:nowrap;animation:tick 46s linear infinite;width:max-content}
+.ticker span{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;padding:0 30px;
+  color:var(--mut);display:flex;align-items:center;gap:30px}
+.ticker span::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--lime);display:inline-block}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- fotos duotonais ---------- */
+.photo{position:relative;border-radius:var(--r);overflow:hidden}
+.photo img{width:100%;height:100%;object-fit:cover;filter:saturate(.62) contrast(1.09) brightness(.87);
+  transition:transform 1.4s cubic-bezier(.2,.65,.25,1),filter .6s}
+.photo:hover img{transform:scale(1.04);filter:saturate(.8) contrast(1.08) brightness(.94)}
+.photo::after{content:"";position:absolute;inset:0;background:linear-gradient(200deg,rgba(205,255,87,.08),transparent 38%,rgba(10,14,11,.62) 94%);pointer-events:none;box-shadow:inset 0 0 80px rgba(10,14,11,.4)}
+.photo .cap{position:absolute;left:18px;bottom:18px;right:18px;z-index:2;color:var(--txt2);font-size:12.5px;line-height:1.5;
+  font-family:var(--mono)}
+.photo .cap b{color:var(--lime);font-weight:600}
+.browser{border-radius:var(--r);overflow:hidden;border:1px solid var(--ln)}
+.browser .bar{display:flex;align-items:center;gap:7px;padding:13px 18px;border-bottom:1px solid var(--ln)}
+.browser .bar i{width:10px;height:10px;border-radius:50%;display:block;background:var(--srf2)}
+.browser .bar i:nth-child(1){background:rgba(255,107,87,.7)}.browser .bar i:nth-child(2){background:rgba(255,180,84,.7)}.browser .bar i:nth-child(3){background:rgba(205,255,87,.7)}
+.browser .url{flex:1;margin-left:10px;background:var(--srf);border-radius:8px;font-family:var(--mono);font-size:10.5px;color:var(--mut);padding:6px 14px}
+
+/* ---------- fluxo ---------- */
+.flow{display:flex;gap:0;margin-top:44px;align-items:stretch;flex-wrap:wrap}
+.flow .step{flex:1;min-width:170px;position:relative;margin-right:38px;padding:4px 0}
+.flow .step:last-child{margin-right:0}
+.flow .step::after{content:"";position:absolute;right:-22px;top:10px;width:22px;height:1.5px;background:var(--ln2)}
+.flow .step:last-child::after{display:none}
+.flow .fn{font-family:var(--mono);font-size:9.5px;color:var(--lime);letter-spacing:.26em;margin-bottom:12px;font-weight:700}
+.flow .step h4{font-size:15.5px;font-weight:650;letter-spacing:-.01em;margin-bottom:6px}
+.flow .step p{font-size:13px;color:var(--txt2);line-height:1.6}
+
+/* ---------- charts ---------- */
+.chart{position:relative}
+.chart .ct{font-size:15px;font-weight:650;letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.chart .cs{font-family:var(--mono);font-size:10px;color:var(--mut);letter-spacing:.12em;text-transform:uppercase}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--mono)}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:var(--mut)}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:8px;vertical-align:-1px}
+
+/* ---------- widgets ---------- */
+.seg{display:inline-flex;gap:2px;border:1px solid var(--ln);border-radius:99px;padding:4px}
+.seg button{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--txt2);background:transparent;border:none;
+  border-radius:99px;padding:9px 21px;cursor:pointer;transition:all .25s}
+.seg button.on{background:var(--lime);color:#0A0E0B}
+.seg button:not(.on):hover{color:var(--txt)}
+.slider-row{display:flex;align-items:center;gap:18px;margin-top:20px}
+.slider-row label{font-size:13px;font-weight:550;color:var(--txt2);min-width:150px}
+.slider-row output{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--lime);min-width:90px;text-align:right}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:3px;border-radius:99px;background:var(--ln2);outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#0A0E0B;
+  border:4.5px solid var(--lime);box-shadow:0 0 0 5px rgba(205,255,87,.14);cursor:grab;transition:transform .15s,box-shadow .15s}
+input[type=range]::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.2);box-shadow:0 0 0 8px rgba(205,255,87,.2)}
+select{background:var(--srf2);color:var(--txt);border:1px solid var(--ln);border-radius:10px;padding:9px 14px;font-family:var(--sans);font-size:13.5px;flex:1;outline:none}
+select:focus{border-color:rgba(205,255,87,.4)}
+
+.tooltip{position:fixed;z-index:1500;background:#111711;border:1px solid var(--ln2);color:var(--txt);font-size:12px;line-height:1.55;
+  border-radius:12px;padding:11px 15px;pointer-events:none;opacity:0;transition:opacity .15s;max-width:260px;box-shadow:0 20px 50px -16px rgba(0,0,0,.7)}
+.tooltip b{color:var(--lime)}
+.tooltip .tt-sub{color:var(--mut)}
+
+.hm{display:grid;gap:6px}
+.hm .hcell{border-radius:8px;padding:12px 8px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:650;
+  cursor:default;transition:transform .16s,box-shadow .16s;color:#0A0E0B;min-width:0}
+.hm .hcell:hover{transform:scale(1.09);box-shadow:0 10px 26px -8px rgba(0,0,0,.5);z-index:2;position:relative}
+.hm .hrowlab{display:flex;align-items:center;justify-content:flex-end;text-align:right;font-size:12.5px;font-weight:600;color:var(--txt2)}
+.hm .hcollab{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--mut);text-align:center;text-transform:uppercase}
+
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chk{display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:all .25s;font-size:14px;color:var(--txt2);line-height:1.6;
+  border:1px solid var(--ln);border-radius:16px;padding:18px}
+.chk:hover{border-color:var(--ln2);background:var(--srf)}
+.chk input{display:none}
+.chk .box{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--ln2);flex-shrink:0;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:11px;color:#0A0E0B}
+.chk input:checked+.box{background:var(--lime);border-color:var(--lime)}
+.chk input:checked~.txt{color:var(--mut2);text-decoration:line-through;text-decoration-color:rgba(205,255,87,.45)}
+.ring-wrap{display:flex;align-items:center;gap:26px}
+.ring-wrap svg{width:116px;height:116px;flex-shrink:0}
+.ring-bg{fill:none;stroke:var(--srf2);stroke-width:9}
+.ring-val{fill:none;stroke:var(--lime);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.65,.25,1),stroke .3s}
+
+.timeline{position:relative;margin-top:56px;padding-top:36px}
+.timeline::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:var(--ln2)}
+.tl-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.tl-item{position:relative}
+.tl-item::before{content:"";position:absolute;top:-42px;left:1px;width:9px;height:9px;border-radius:50%;
+  background:var(--bg);border:2px solid var(--lime);box-shadow:0 0 0 5px rgba(205,255,87,.1)}
+.tl-item .yr{font-family:var(--mono);font-size:11px;color:var(--lime);font-weight:700;letter-spacing:.12em}
+.tl-item h4{font-size:14.5px;margin:8px 0 6px;font-weight:650}
+.tl-item p{font-size:12.5px;color:var(--mut);line-height:1.6}
+
+.split-img{position:sticky;top:100px}
+#counter{position:fixed;bottom:22px;right:26px;z-index:900;font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;
+  color:var(--mut);background:rgba(10,14,11,.8);backdrop-filter:blur(12px);border:1px solid var(--ln);border-radius:99px;padding:8px 14px}
+#counter b{color:var(--lime);font-weight:700}
+footer{position:relative;z-index:1;padding:clamp(72px,10vh,120px) 0 48px}
+footer .disc{max-width:640px;font-size:12px;color:var(--mut2);line-height:1.75;border-top:1px solid var(--ln);padding-top:26px}
+footer .disc b{color:var(--mut)}
+footer .sig{font-family:var(--mono);font-size:11px;color:var(--mut2);letter-spacing:.18em;line-height:2.1;text-align:right}
+footer .sig b{color:var(--lime)}
+footer .top{color:var(--txt);text-decoration:none;border:1px solid var(--ln2);border-radius:99px;padding:10px 20px;font-size:12px;transition:all .25s;display:inline-block}
+footer .top:hover{background:var(--lime);color:#0A0E0B;border-color:var(--lime)}
+
+/* topografia decorativa */
+.topo{position:absolute;inset:0;pointer-events:none;opacity:.5;z-index:0}
+section>.wrap{position:relative;z-index:1}
+
+@media(max-width:1020px){
+  .g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}
+  .hero-stats{grid-template-columns:1fr 1fr;gap:32px 24px}
+  .tl-grid{grid-template-columns:1fr 1fr;gap:30px}.timeline::before{display:none}
+  .g21,.g12{grid-template-columns:1fr}.split-img{position:static}
+  .ghost{display:none}
+}
+@media(max-width:680px){
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .check-grid{grid-template-columns:1fr}
+  #counter{display:none}
+  footer .wrap{padding-bottom:20px}
+  .flow .step{min-width:100%;margin-right:0;margin-bottom:36px}
+  .flow .step::after{content:"";position:static;width:auto;height:1px;width:22px;margin:14px 0 0;background:var(--ln2);display:block}
+  .scrollcue{display:none}
+  .slider-row{flex-wrap:wrap}.slider-row label{min-width:100%}
+  .slider-row output{min-width:auto}
+  section{padding:64px 0}
+  .quote{font-size:clamp(18px,5.4vw,24px)}
+}
+@media print{#topbar,#progress,#counter,.tooltip,.scrollcue,.orbs{display:none!important}}
+</style>
+</head>
+<body>
+
+<div class="orbs" aria-hidden="true"><div class="orb a"></div><div class="orb b"></div><div class="orb c"></div></div>
+<div id="progress"></div>
+<div id="tooltip" class="tooltip"></div>
+
+<header id="topbar">
+  <div class="tb-in">
+    <a class="logo" href="#hero"><span class="mark"></span>proptech<em>·bairro→carteira</em></a>
+    <nav class="tb-links">
+      <a href="#ativo">O ativo</a><a href="#bairro">O bairro</a><a href="#stack">A stack</a>
+      <a href="#fiis">FIIs</a><a href="#carteira">Carteira</a><a href="#simulador">Simulador</a>
+    </nav>
+    <a class="tb-cta" href="#simulador" style="margin-left:8px">Simular</a>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 01 HERO ============ -->
+<section id="hero" data-title="Capa">
+  <div class="bg" id="hero-bg"></div>
+  <div class="wrap">
+    <div class="hero-badge rv"><span class="dot"></span>DECK INTERATIVO · IMOBILIÁRIO · DADOS · FUNDOS</div>
+    <h1 class="rv d1">PropTech<br><em>do bairro à carteira.</em></h1>
+    <p class="sub rv d2">Como a tecnologia transforma o imóvel de <b>tijolo em ativo financeiro</b> — da leitura de dados
+    da rua até uma <b>carteira diversificada de fundos imobiliários</b>.</p>
+    <div class="hero-ctas rv d3">
+      <a class="btn p" href="#ativo">Começar a jornada</a>
+      <a class="btn s" href="#simulador">Ir ao simulador</a>
+    </div>
+    <div class="hero-stats rv d4">
+      <div class="stat"><div class="v" data-count="300" data-suffix="+">0</div><div class="l">proptechs no ecossistema brasileiro</div></div>
+      <div class="stat"><div class="v wh" data-count="10" data-prefix="R$ " data-suffix=" bi+">0</div><div class="l">captados em venture capital pelo setor</div></div>
+      <div class="stat"><div class="v" data-count="6">0</div><div class="l">movimentos da jornada: ativo → carteira</div></div>
+      <div class="stat"><div class="v wh" data-count="26">0</div><div class="l">seções interativas nesta apresentação</div></div>
+    </div>
+  </div>
+  <div class="scrollcue"><span>SCROLL</span><span class="wheel"></span></div>
+</section>
+
+<div class="ticker" aria-hidden="true"><div class="track" id="ticker-track">
+  <span>AVM · precificação automática</span><span>Days-on-market</span><span>Vacância</span><span>iBuying</span>
+  <span>Home equity</span><span>CRI · LCI</span><span>Crowdfunding imobiliário</span><span>Tokenização</span>
+  <span>FII de tijolo</span><span>FII de papel</span><span>P/VP</span><span>Dividend yield</span><span>IGP-M</span>
+  <span>Cap rate</span><span>Carteira diversificada</span>
+</div></div>
+
+<!-- ============ 02 SUMÁRIO ============ -->
+<section id="sumario" data-title="Sumário">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">02</span>
+      <div class="kicker"><span class="n">02</span>SUMÁRIO</div>
+      <h2 class="rv">A rota em <em>seis movimentos.</em></h2>
+      <p class="lead rv d1">Entender o ativo, enxergá-lo como dado, industrializar a transação, torná-lo investível em frações — e administrá-lo como carteira.</p>
+    </div>
+    <div class="grid g3">
+      <a class="blk rv d1" href="#ativo" style="text-decoration:none"><div class="bn">PARTE 1</div><h3>O imóvel como ativo</h3><p>Ticket, liquidez, opacidade e custo — e como o imóvel compete com ações e renda fixa.</p></a>
+      <a class="blk rv d2" href="#bairro" style="text-decoration:none"><div class="bn">PARTE 2</div><h3>O bairro como dado</h3><p>Preço/m², vacância, days-on-market — <b>mapa de calor interativo</b> e mini-simulador de AVM.</p></a>
+      <a class="blk rv d3" href="#stack" style="text-decoration:none"><div class="bn">PARTE 3</div><h3>A stack PropTech</h3><p>Marketplace, iBuying, crédito digital, fractional e tokenização — camada por camada.</p></a>
+      <a class="blk rv d4" href="#fiis" style="text-decoration:none"><div class="bn">PARTE 4</div><h3>Do imóvel ao papel</h3><p>FIIs: o veículo que leva o bairro à bolsa — <b>universo em scatter interativo</b>.</p></a>
+      <a class="blk rv d5" href="#carteira" style="text-decoration:none"><div class="bn">PARTE 5</div><h3>Construindo a carteira</h3><p>Perfis em <b>radar</b>, ciclo de juros com <b>slider de Selic</b> e simulador de patrimônio.</p></a>
+      <a class="blk rv d6" href="#riscos" style="text-decoration:none"><div class="bn">PARTE 6</div><h3>Riscos &amp; tendências</h3><p>Matriz de riscos, tributação, cases brasileiros — e <b>checklist pontuado</b>.</p></a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 O ATIVO ============ -->
+<section id="ativo" data-title="O imóvel como ativo">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">03</span>
+      <div class="kicker"><span class="n">03</span>PARTE 1 · O IMÓVEL COMO ATIVO</div>
+      <h2 class="rv">Um ótimo ativo,<br><em>um péssimo produto.</em></h2>
+      <p class="lead rv d1">O imóvel gera renda e proteção patrimonial há séculos — mas como produto financeiro carrega atritos que a tecnologia existe para atacar.</p>
+    </div>
+    <div class="grid g4">
+      <div class="blk rv d1"><div class="bn">ATRITO 01</div><h3>Ticket alto</h3><p><b>Centenas de milhares de reais</b> concentrados em um único imóvel — e um único bairro.</p></div>
+      <div class="blk rv d2"><div class="bn">ATRITO 02</div><h3>Iliquidez</h3><p>Vender pode levar <b>meses</b>, em prazo incerto e sensível ao ciclo.</p></div>
+      <div class="blk rv d3"><div class="bn">ATRITO 03</div><h3>Opacidade de preço</h3><p>Sem cotação diária: valor depende de <b>comparáveis escassos</b>.</p></div>
+      <div class="blk rv d4"><div class="bn">ATRITO 04</div><h3>Custo de transação</h3><p><b>ITBI, registro, corretagem</b> — dígitos inteiros a cada ida e volta.</p></div>
+    </div>
+    <div class="grid g21" style="margin-top:clamp(44px,7vh,72px)">
+      <div class="chart rv d2">
+        <div class="ct"><span>O custo de entrar e sair</span><span class="cs">ilustrativo · % do valor</span></div>
+        <svg id="custo-chart" viewBox="0 0 720 300" role="img" aria-label="Composição dos custos de transação">
+          <g class="cbar" data-name="Corretagem" data-v="5" data-c="#CDFF57"><rect x="190" y="26" height="30" rx="8"/><text class="cl" x="182" y="46" text-anchor="end"></text><text class="cv" x="200" y="46" fill="#0A0E0B" font-weight="700" font-size="12"></text></g>
+          <g class="cbar" data-name="ITBI (~3%)" data-v="3" data-c="#B8E447"><rect x="190" y="76" height="30" rx="8"/><text class="cl" x="182" y="96" text-anchor="end"></text><text class="cv" x="200" y="96" fill="#0A0E0B" font-weight="700" font-size="12"></text></g>
+          <g class="cbar" data-name="Registro + escritura" data-v="1.5" data-c="#8FA08D"><rect x="190" y="126" height="30" rx="8"/><text class="cl" x="182" y="146" text-anchor="end"></text><text class="cv" x="200" y="146" fill="#F2F5EE" font-weight="700" font-size="12"></text></g>
+          <g class="cbar" data-name="Diligências" data-v="0.7" data-c="#5F6B5D"><rect x="190" y="176" height="30" rx="8"/><text class="cl" x="182" y="196" text-anchor="end"></text><text class="cv" x="200" y="196" fill="#F2F5EE" font-weight="700" font-size="12"></text></g>
+          <g class="cbar" data-name="Tempo (90–180 dias)" data-v="1.0" data-c="#FFB454"><rect x="190" y="226" height="30" rx="8"/><text class="cl" x="182" y="246" text-anchor="end"></text><text class="cv" x="200" y="246" fill="#0A0E0B" font-weight="700" font-size="12"></text></g>
+          <text x="190" y="285" text-anchor="middle" fill="#5F6B5D" font-size="10.5">≈ 6 a 11% do valor em uma compra + venda · ordens de grandeza</text>
+        </svg>
+      </div>
+      <div class="photo rv d3">
+        <img loading="lazy" decoding="async" src="assets/tower-portrait.jpg" alt="Torre corporativa" style="height:340px">
+        <div class="cap"><b>lajes corporativas</b> — renda contratada, reajuste indexado, inquilino com nome.</div>
+      </div>
+    </div>
+    <div class="quote rv d4">O problema nunca foi o ativo. É a fricção ao redor dele.<small>TESE CENTRAL — CADA CAMADA DA STACK REMOVE UMA FRICÇÃO</small></div>
+  </div>
+</section>
+
+<!-- ============ 04 COMPARATIVO ============ -->
+<section id="comparativo" data-title="Imóvel vs outros ativos">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">04</span>
+      <div class="kicker"><span class="n">04</span>PARTE 1 · COMPARATIVO</div>
+      <h2 class="rv">Onde o imóvel <em>ganha e perde.</em></h2>
+      <p class="lead rv d1">Imóvel direto — e FII — lado a lado com ações e renda fixa: os atritos viram linhas de uma tabela.</p>
+    </div>
+    <div class="tbl-scroll rv d1">
+        <p class="scroll-hint">arraste para o lado →</p><table>
+      <thead><tr><th>Dimensão</th><th>Ações</th><th>Renda fixa</th><th>Imóvel direto</th><th>FII</th></tr></thead>
+      <tbody>
+        <tr><td>Ticket mínimo</td><td>Baixo</td><td>Baixo</td><td>Muito alto</td><td><span class="pill ok">mínimo</span></td></tr>
+        <tr><td>Liquidez</td><td><span class="pill ok">diária</span></td><td>No vencimento</td><td><span class="pill hot">meses</span></td><td><span class="pill ok">diária · B3</span></td></tr>
+        <tr><td>Gestão</td><td>Pessoal</td><td>Nenhuma</td><td><span class="pill hot">ativa e local</span></td><td><span class="pill ok">profissional</span></td></tr>
+        <tr><td>Renda recorrente</td><td>Variável</td><td>Cupom contratado</td><td>Aluguel</td><td><span class="pill ok">mensal</span></td></tr>
+        <tr><td>Proteção inflação</td><td>Indireta</td><td>Depende do indexador</td><td><span class="pill ok">IGP-M / mercado</span></td><td>Depende do fundo</td></tr>
+        <tr><td>Diversificação</td><td>Por empresa</td><td>Por emissor</td><td><span class="pill hot">zero — um imóvel</span></td><td><span class="pill ok">por carteira</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note rv d2">O FII herda as virtudes do imóvel (renda, inflação) e importa as da bolsa (fração, liquidez) — com os riscos dos dois também.</p>
+  </div>
+</section>
+
+<!-- ============ 05 POR QUE AGORA ============ -->
+<section id="agora" data-title="Por que agora">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">05</span>
+      <div class="kicker"><span class="n">05</span>PARTE 1 · POR QUE AGORA</div>
+      <h2 class="rv">A confluência que<br><em>criou a onda.</em></h2>
+    </div>
+    <div class="grid g12">
+      <div class="browser rv d1">
+        <div class="bar"><i></i><i></i><i></i><span class="url">plataforma.proptech/analytics — painel de região</span></div>
+        <svg viewBox="0 0 640 400" role="img" aria-label="Painel de região" style="display:block;background:#0C110E">
+          <g font-family="ui-monospace,Menlo,monospace">
+            <text x="28" y="40" fill="#8B9987" font-size="10" letter-spacing="3">REGIÃO · FARIA LIMA / OESTE</text>
+            <text x="28" y="86" fill="#CDFF57" font-size="34" font-weight="700">+8,8%<tspan fill="#5F6B5D" font-size="12" font-weight="400" dx="8">valorização 12m</tspan></text>
+            <text x="28" y="118" fill="#8B9987" font-size="11">R$ 9.800/m² · mediana</text>
+            <text x="360" y="86" fill="#FFB454" font-size="20" font-weight="700">10%<tspan fill="#5F6B5D" font-size="11" font-weight="400" dx="6">vacância</tspan></text>
+            <text x="500" y="86" fill="#FFB454" font-size="20" font-weight="700">57d<tspan fill="#5F6B5D" font-size="11" font-weight="400" dx="6">DOM</tspan></text>
+            <!-- sparkline área -->
+            <path d="M28 190 L96 176 L164 182 L232 158 L300 164 L368 140 L436 146 L504 122 L572 128 L612 112 L612 232 L28 232 Z" fill="rgba(205,255,87,.06)"/>
+            <path d="M28 190 L96 176 L164 182 L232 158 L300 164 L368 140 L436 146 L504 122 L572 128 L612 112" fill="none" stroke="#CDFF57" stroke-width="2"/>
+            <circle cx="612" cy="112" r="4" fill="#CDFF57"/>
+            <g fill="#5F6B5D" font-size="9">
+              <text x="28" y="252">T1·24</text><text x="168" y="252">T3·24</text><text x="316" y="252">T1·25</text><text x="464" y="252">T3·25</text><text x="580" y="252">hoje</text>
+            </g>
+            <!-- mini heat grid -->
+            <g font-size="8.5">
+              <text x="28" y="286" fill="#8B9987" letter-spacing="2">MATRIZ DE SAÚDE REGIONAL</text>
+              <g fill="#CDFF57"><rect x="28" y="298" width="86" height="22" rx="6" opacity=".9"/><rect x="120" y="298" width="86" height="22" rx="6" opacity=".6"/><rect x="212" y="298" width="86" height="22" rx="6" opacity=".35"/></g>
+              <g fill="#FFB454"><rect x="304" y="298" width="86" height="22" rx="6" opacity=".8"/></g>
+              <g fill="#FF8A6B"><rect x="396" y="298" width="86" height="22" rx="6" opacity=".8"/></g>
+              <g fill="#8FA08D"><rect x="488" y="298" width="86" height="22" rx="6" opacity=".7"/></g>
+              <g fill="rgba(242,245,238,.75)">
+                <text x="40" y="313">demand</text><text x="132" y="313">supply</text><text x="224" y="313">infra</text><text x="316" y="313">oferta</text><text x="408" y="313">DOM</text><text x="500" y="313">yield</text>
+              </g>
+            </g>
+            <!-- footer ticker -->
+            <line x1="28" y1="348" x2="612" y2="348" stroke="rgba(255,255,255,.08)"/>
+            <g fill="#5F6B5D" font-size="9.5" letter-spacing="1.5">
+              <text x="28" y="372">VENDAS 90D <tspan fill="#CDFF57">1.284</tspan></text>
+              <text x="200" y="372">NOVOS LS <tspan fill="#CDFF57">312</tspan></text>
+              <text x="360" y="372">ALUGUÉIS <tspan fill="#FFB454">R$ 48/m²</tspan></text>
+              <text x="500" y="372">FONTE <tspan fill="#5F6B5D">AVM·V3</tspan></text>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <div>
+        <ul class="list">
+          <li class="rv d2"><span><b>Dados públicos digitalizados</b> — matrículas, cartórios e registros viram base de cálculo.</span></li>
+          <li class="rv d3"><span><b>Crédito digitalizado</b> — da agência para o celular, com decisão em dias.</span></li>
+          <li class="rv d4"><span><b>IA e AVMs</b> — precificação automática, auditável e instantânea.</span></li>
+          <li class="rv d5"><span><b>Mudança de hábito</b> — comprar, alugar e investir sem sair de casa.</span></li>
+        </ul>
+        <div class="grid g3" style="margin-top:44px">
+          <div class="stat rv d4"><div class="v" data-count="300" data-suffix="+">0</div><div class="l">proptechs ativas</div></div>
+          <div class="stat rv d5"><div class="v wh" data-count="3">0</div><div class="l">unicórnios com DNA imobiliário</div></div>
+          <div class="stat rv d6"><div class="v" data-count="2" data-suffix="x">0</div><div class="l">velocidade de adoção vs. década passada</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 BAIRRO ============ -->
+<section id="bairro" data-title="O bairro como dado">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">06</span>
+      <div class="kicker"><span class="n">06</span>PARTE 2 · O BAIRRO COMO DADO</div>
+      <h2 class="rv">Toda decisão imobiliária<br>é uma <em>aposta regional.</em></h2>
+      <p class="lead rv d1">Antes de ser um ativo na carteira, o imóvel é um conjunto de variáveis de rua e de bairro.</p>
+    </div>
+    <div class="grid g12">
+      <div class="photo rv d1">
+        <img loading="lazy" decoding="async" src="assets/neighborhood-1.jpg" alt="Vista aérea de bairro" style="height:430px">
+        <div class="cap"><b>a unidade básica de análise</b> — cada quadra tem preço, velocidade e vacância próprios.</div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:clamp(28px,3vw,40px)">
+        <div class="blk rv d1"><div class="bn">VAR 01</div><h3>Preço por m²</h3><p>Comparáveis georreferenciados revelam <b>microclimas de valor</b> no mesmo CEP.</p></div>
+        <div class="blk rv d2"><div class="bn">VAR 02</div><h3>Days-on-market</h3><p>Velocidade de venda mede a <b>liquidez implícita</b> da região.</p></div>
+        <div class="blk rv d3"><div class="bn">VAR 03</div><h3>Vacância</h3><p>Oferta vagante antecipa <b>pressão sobre aluguéis</b> e renda.</p></div>
+        <div class="blk rv d4"><div class="bn">VAR 04</div><h3>Oferta nova</h3><p>Lançamentos preveem <b>concorrência futura</b> pela demanda.</p></div>
+        <div class="blk rv d5"><div class="bn">VAR 05</div><h3>Infraestrutura</h3><p>Transporte e serviços mudam o <b>eixo de valorização</b>.</p></div>
+        <div class="blk rv d6"><div class="bn">VAR 06</div><h3>Demanda local</h3><p>Perfil demográfico define o <b>produto certo</b> por rua.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 HEATMAP ============ -->
+<section id="heatmap" data-title="Radar de regiões">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">07</span>
+      <div class="kicker"><span class="n">07</span>PARTE 2 · RADAR DE REGIÕES</div>
+      <h2 class="rv">Quatro métricas,<br><em>oito regiões.</em></h2>
+      <p class="lead rv d1">Passe o cursor nas células. Assim um gestor de FII escaneia um mercado antes de comprar um ativo.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1">
+        <div class="ct"><span>São Paulo e entorno</span><span class="cs">ilustrativo · hover</span></div>
+        <div class="hm-wrap"><div class="hm" id="heatmap"></div></div>
+      </div>
+      <div>
+        <ul class="list">
+          <li class="rv d2"><span><b>Valorização 12m</b> — tendência importa mais que nível.</span></li>
+          <li class="rv d3"><span><b>Vacância</b> — oferta vagante comprime aluguel e renda.</span></li>
+          <li class="rv d4"><span><b>Days-on-market</b> — maior prazo, menor liquidez.</span></li>
+          <li class="rv d5"><span><b>Oferta nova</b> — pipeline de concorrência futura.</span></li>
+        </ul>
+        <div class="quote rv d6" style="margin-top:44px;font-size:clamp(18px,2vw,23px)">O gestor não compra um prédio. Compra um conjunto de variáveis regionais com um prédio dentro.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 AVM ============ -->
+<section id="avm" data-title="AVM — precificação automática">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">08</span>
+      <div class="kicker"><span class="n">08</span>PARTE 2 · AVM</div>
+      <h2 class="rv">O preço justo<br><em>em segundos.</em></h2>
+      <p class="lead rv d1">O <b>Automated Valuation Model</b> cruza transações, atributos e entorno. Experimente — o raciocínio (simplificado) por trás de iBuying e análise de fundos.</p>
+    </div>
+    <div class="grid g12">
+      <div class="chart rv d1">
+        <div class="ct"><span>Mini-AVM</span><span class="cs">brincadeira didática</span></div>
+        <div class="slider-row"><label>Região</label>
+          <select id="avm-regiao">
+            <option value="11500">Centro expandido</option><option value="9800" selected>Zona Oeste</option>
+            <option value="8900">Zona Sul</option><option value="7200">Zona Norte</option><option value="6800">Zona Leste</option>
+          </select></div>
+        <div class="slider-row"><label>Tipologia</label>
+          <select id="avm-tipo">
+            <option value="1">2 quartos</option><option value="1.06" selected>3 quartos</option>
+            <option value="0.86">Casa térrea</option><option value="1.28">Cobertura</option>
+          </select></div>
+        <div class="slider-row"><label>Área útil</label><input type="range" id="avm-area" min="40" max="220" value="85" step="5"><output id="avm-area-o">85 m²</output></div>
+        <div class="slider-row"><label>Conservação</label><input type="range" id="avm-estado" min="-8" max="10" value="0" step="1"><output id="avm-estado-o">normal</output></div>
+        <div style="margin-top:34px;border-top:1px solid var(--ln);padding-top:28px;display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap">
+          <div>
+            <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Faixa estimada</div>
+            <div id="avm-out" style="font-size:clamp(24px,2.8vw,36px);font-weight:700;letter-spacing:-.04em;color:var(--lime)">—</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--mut);text-transform:uppercase;margin-bottom:8px">Valor central</div>
+            <div id="avm-out2" style="font-family:var(--mono);font-size:22px;font-weight:700">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="flow" style="flex-direction:column;gap:38px;margin-top:0">
+        <div class="step rv d2" style="margin-right:0"><div class="fn">INPUT</div><h4>Transações + atributos</h4><p>Vendas recentes, área, tipologia, padrão, posição e entorno.</p></div>
+        <div class="step rv d3" style="margin-right:0"><div class="fn">MODELO</div><h4>Regressão / ML</h4><p>O modelo aprende o preço implícito de cada característica.</p></div>
+        <div class="step rv d4" style="margin-right:0"><div class="fn">OUTPUT</div><h4>Faixa ± intervalo</h4><p>Estimativa com banda de confiança, atualizada a cada venda.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 09 STACK ============ -->
+<section id="stack" data-title="A stack PropTech">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">09</span>
+      <div class="kicker"><span class="n">09</span>PARTE 3 · A STACK PROPTECH</div>
+      <h2 class="rv">Cinco camadas,<br><em>um atrito por vez.</em></h2>
+      <p class="lead rv d1">Clique nas camadas para explorar — da descoberta ao investimento fracionado.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1" style="cursor:pointer">
+        <div class="ct"><span>Arquitetura da stack</span><span class="cs">interativo</span></div>
+        <svg id="stack-svg" viewBox="0 0 640 330"></svg>
+      </div>
+      <div class="rv d2" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="bn" id="sd-num" style="font-family:var(--mono);font-size:10px;color:var(--lime);letter-spacing:.24em;margin-bottom:12px">CAMADA 5</div>
+        <h3 id="sd-title" style="font-size:26px;font-weight:700;letter-spacing:-.025em;margin-bottom:12px">Investimento</h3>
+        <p id="sd-desc" style="font-size:15px;color:var(--txt2);line-height:1.7"></p>
+        <div id="sd-ex" style="margin-top:22px;display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+    </div>
+    <div class="timeline rv d2">
+      <div class="tl-grid">
+        <div class="tl-item"><div class="yr">2012–14</div><h4>Portais 1.0</h4><p>Anúncios digitais organizam a descoberta e geram o primeiro dado de oferta.</p></div>
+        <div class="tl-item"><div class="yr">2015–17</div><h4>Aluguel reinventado</h4><p>Sem fiador, garantia digital e scoring — a locação abre o setor.</p></div>
+        <div class="tl-item"><div class="yr">2018–20</div><h4>iBuying &amp; unicórnios</h4><p>Oferta firme por AVM e bilhões em captação para compra online.</p></div>
+        <div class="tl-item"><div class="yr">2021–23</div><h4>Crédito &amp; dados</h4><p>Crédito digital, home equity e AVMs viram infraestrutura.</p></div>
+        <div class="tl-item"><div class="yr">2024–26</div><h4>Fração &amp; IA</h4><p>IA generativa na ponta e o PF descobrindo a carteira de FIIs.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 IBUYING ============ -->
+<section id="ibuying" data-title="Marketplace & iBuying">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">10</span>
+      <div class="kicker"><span class="n">10</span>PARTE 3 · MARKETPLACE &amp; IBUYING</div>
+      <h2 class="rv">Hiperintermediação<br><em>por dados.</em></h2>
+      <p class="lead rv d1">A promessa não é eliminar o intermediário — é reconstruí-lo em cima de dados.</p>
+    </div>
+    <div class="grid g21">
+      <div>
+        <div class="chart rv d1">
+          <div class="ct"><span>Tempo até vender</span><span class="cs">ilustrativo · dias</span></div>
+          <svg viewBox="0 0 720 240" role="img" aria-label="Dias para vender">
+            <g font-size="12">
+              <text x="150" y="40" text-anchor="end" fill="#8B9987" font-weight="600">Caminho tradicional</text>
+              <g class="bbar" data-v="180"><rect x="160" y="22" height="30" rx="8" fill="#5F6B5D"/><text class="v" x="172" y="42" fill="#F2F5EE" font-weight="700">180 dias</text></g>
+              <text x="150" y="100" text-anchor="end" fill="#8B9987" font-weight="600">Marketplace + dados</text>
+              <g class="bbar" data-v="90"><rect x="160" y="82" height="30" rx="8" fill="#8FA08D"/><text class="v" x="172" y="102" fill="#0A0E0B" font-weight="700">90 dias</text></g>
+              <text x="150" y="160" text-anchor="end" fill="#8B9987" font-weight="600">iBuying (oferta firme)</text>
+              <g class="bbar" data-v="10"><rect x="160" y="142" height="30" rx="8" fill="#CDFF57"/><text class="v" x="182" y="162" fill="#0A0E0B" font-weight="700">10 dias</text></g>
+              <line x1="160" y1="10" x2="160" y2="200" stroke="rgba(255,255,255,.14)"/>
+              <text x="160" y="228" text-anchor="middle" fill="#5F6B5D" font-size="10.5">cada camada de dado comprime o prazo — e o prêmio de iliquidez</text>
+            </g>
+          </svg>
+        </div>
+        <div class="grid g2" style="margin-top:clamp(36px,5vh,52px)">
+          <div class="blk rv d3"><div class="bn">PAPEL</div><h3>Corretor ampliado</h3><p>Seguem no centro — agora <b>instrumentados</b> por dados regionais.</p></div>
+          <div class="blk rv d4"><div class="bn">MOTOR</div><h3>Matching</h3><p>Compatibilidade reduz <b>visitas infrutíferas</b> e acelera o pareamento.</p></div>
+        </div>
+      </div>
+      <div class="photo rv d2">
+        <img loading="lazy" decoding="async" src="assets/city-portrait.jpg" alt="Skyline vertical" style="height:100%;min-height:440px">
+        <div class="cap"><b>liquidez industrializada</b> — o platform assume o risco de prazo.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 CRÉDITO ============ -->
+<section id="credito" data-title="Crédito digital">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">11</span>
+      <div class="kicker"><span class="n">11</span>PARTE 3 · CRÉDITO DIGITAL</div>
+      <h2 class="rv">Financiar virou <em>API.</em></h2>
+    </div>
+    <div class="flow">
+      <div class="step rv d1"><div class="fn">01</div><h4>Proposta digital</h4><p>Fluxo único, sem papel, sem agência.</p></div>
+      <div class="step rv d2"><div class="fn">02</div><h4>Análise com sinais</h4><p>Scoring + dados alternativos de renda.</p></div>
+      <div class="step rv d3"><div class="fn">03</div><h4>Garantia por AVM</h4><p>Valor estimado em segundos, com banda.</p></div>
+      <div class="step rv d4"><div class="fn">04</div><h4>Closing digital</h4><p>Semanas de cartório em dias.</p></div>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(44px,7vh,72px)">
+      <div class="blk rv d3"><div class="bn">PRODUTO</div><h3>Originação digital</h3><p>Proposta, documentação e assinatura <b>100% remotas</b>.</p></div>
+      <div class="blk rv d4"><div class="bn">EMBUTIDO</div><h3>Crédito as a service</h3><p>O crédito <b>dentro do fluxo</b> da compra.</p></div>
+      <div class="blk rv d5"><div class="bn">GARANTIA</div><h3>Home equity</h3><p>Imóvel quitado como garantia — <b>liquidez sem vender</b>.</p></div>
+    </div>
+    <div class="quote rv d6">Juro menor e prazo maior reposicionam o imóvel na competição com a renda fixa.</div>
+  </div>
+</section>
+
+<!-- ============ 12 FRACTIONAL ============ -->
+<section id="fractional" data-title="Fractional & crowdfunding">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">12</span>
+      <div class="kicker"><span class="n">12</span>PARTE 3 · FRACTIONAL &amp; CROWDFUNDING</div>
+      <h2 class="rv">O imóvel em <em>frações.</em></h2>
+      <p class="lead rv d1">Entre o imóvel inteiro e o FII listado, um espectro de veículos. Arraste o cursor.</p>
+    </div>
+    <div class="chart rv d1">
+      <div class="ct"><span>Espectro da fração</span><span class="cs">interativo · arraste</span></div>
+      <svg id="spectrum-svg" viewBox="0 0 900 240"></svg>
+      <div style="margin-top:6px">
+        <b id="sp-name" style="font-size:17px;font-weight:700;letter-spacing:-.015em">FII listado</b>
+        <p id="sp-desc" style="font-size:14.5px;color:var(--txt2);margin-top:6px;line-height:1.65;max-width:720px"></p>
+        <div style="display:flex;gap:26px;margin-top:14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;flex-wrap:wrap">
+          <span style="color:var(--mut)">TICKET <b id="sp-ticket" style="color:var(--lime)">mínimo</b></span>
+          <span style="color:var(--mut)">LIQUIDEZ <b id="sp-liq" style="color:var(--lime)">diária</b></span>
+          <span style="color:var(--mut)">REGULAÇÃO <b id="sp-reg" style="color:var(--lime)">plena</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-scroll rv d2" style="margin-top:clamp(40px,6vh,56px)">
+        <p class="scroll-hint">arraste para o lado →</p><table>
+      <thead><tr><th>Veículo</th><th>O que expõe</th><th>Ticket</th><th>Liquidez</th><th>Regulação</th></tr></thead>
+      <tbody>
+        <tr><td>CRI / LCI</td><td>Recebíveis de crédito imobiliário</td><td>Médio</td><td><span class="pill mid">vencimento</span></td><td>CVM</td></tr>
+        <tr><td>Crowdfunding</td><td>Projetos de desenvolvimento</td><td>Baixo</td><td><span class="pill hot">baixa</span></td><td>CVM</td></tr>
+        <tr><td>Fractional (SPE)</td><td>Fração de imóvel rentável</td><td>Baixo–médio</td><td><span class="pill hot">baixa</span></td><td>Societário</td></tr>
+        <tr><td>Token imobiliário</td><td>Fração em blockchain</td><td>Baixo</td><td><span class="pill mid">emergente</span></td><td>Em construção</td></tr>
+        <tr><td>FII listado</td><td>Carteira inteira</td><td>Mínimo</td><td><span class="pill ok">diária · B3</span></td><td>CVM · plena</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ 13 TOKEN ============ -->
+<section id="token" data-title="Tokenização">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">13</span>
+      <div class="kicker"><span class="n">13</span>PARTE 3 · TOKENIZAÇÃO</div>
+      <h2 class="rv">O mesmo imóvel,<br><em>mais líquido?</em></h2>
+    </div>
+    <div class="grid g21">
+      <div>
+        <div class="grid g3" style="gap:clamp(28px,3vw,40px)">
+          <div class="blk rv d1"><div class="bn">POTENCIAL</div><h3>Mercado 24/7</h3><p>Secondary sempre aberto, settlement instantâneo, <b>acesso global</b>.</p></div>
+          <div class="blk rv d2"><div class="bn">REALIDADE</div><h3>Regulação pendente</h3><p>Liquidez real depende de <b>demanda institucional</b>.</p></div>
+          <div class="blk rv d3"><div class="bn">POSTURA</div><h3>Experimental</h3><p>Exposição pequena, contraparte auditada, <b>tese explícita</b>.</p></div>
+        </div>
+        <div class="quote rv d3" style="margin-top:clamp(40px,6vh,60px)">Tokenização não muda o ativo — muda a embalagem. O risco continua sendo do bairro, do inquilino e do ciclo.</div>
+      </div>
+      <div class="photo rv d4"><img loading="lazy" decoding="async" src="assets/construction-2.jpg" alt="Construção ao amanhecer" style="height:300px"><div class="cap"><b>desenvolvimento tokenizado</b> — capital fracionado financiando a obra.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 14 FIIS ============ -->
+<section id="fiis" data-title="FIIs — do imóvel ao papel">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">14</span>
+      <div class="kicker"><span class="n">14</span>PARTE 4 · FUNDOS IMOBILIÁRIOS</div>
+      <h2 class="rv">O bairro<br><em>vai à bolsa.</em></h2>
+      <p class="lead rv d1">Um veículo listado e regulado que concentra imóveis inteiros — e os devolve ao investidor em <b>cotas líquidas de poucos reais</b>.</p>
+    </div>
+    <div class="chart rv d1">
+      <div class="ct"><span>O fluxo do fundo</span><span class="cs">cotista → fundo → ativos → rendimentos</span></div>
+      <svg viewBox="0 0 980 250" role="img" aria-label="Fluxo de um FII">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#CDFF57"/></marker>
+        </defs>
+        <g font-size="13" font-weight="650" fill="#F2F5EE">
+          <rect x="20" y="88" width="170" height="74" rx="18" fill="rgba(255,255,255,.032)"/>
+          <text x="105" y="120" text-anchor="middle">Cotistas</text><text x="105" y="140" text-anchor="middle" font-size="10.5" font-weight="400" fill="#8B9987">aportam capital</text>
+          <rect x="270" y="88" width="190" height="74" rx="18" fill="rgba(255,255,255,.032)"/>
+          <text x="365" y="120" text-anchor="middle">Fundo (FII)</text><text x="365" y="140" text-anchor="middle" font-size="10.5" font-weight="400" fill="#8B9987">gestão profissional + B3</text>
+          <rect x="545" y="16" width="190" height="66" rx="18" fill="rgba(255,255,255,.032)"/>
+          <text x="640" y="44" text-anchor="middle">Imóveis</text><text x="640" y="62" text-anchor="middle" font-size="10.5" font-weight="400" fill="#8B9987">lajes · galpões · shoppings</text>
+          <rect x="545" y="170" width="190" height="66" rx="18" fill="rgba(255,255,255,.032)"/>
+          <text x="640" y="198" text-anchor="middle">CRI / LCI</text><text x="640" y="216" text-anchor="middle" font-size="10.5" font-weight="400" fill="#8B9987">recebíveis de crédito</text>
+          <rect x="815" y="88" width="145" height="74" rx="18" fill="rgba(205,255,87,.07)" stroke="rgba(205,255,87,.3)" stroke-width="1"/>
+          <text x="887" y="118" text-anchor="middle" fill="#CDFF57">Rendimentos</text><text x="887" y="138" text-anchor="middle" font-size="10.5" font-weight="400" fill="#8B9987">distribuição mensal</text>
+        </g>
+        <g stroke="#CDFF57" stroke-width="1.8" fill="none" opacity=".85">
+          <path class="dash" d="M190 125 H262" marker-end="url(#arr)"/>
+          <path class="dash" d="M460 112 C500 100 510 60 537 50" marker-end="url(#arr)"/>
+          <path class="dash" d="M460 138 C500 152 510 192 537 200" marker-end="url(#arr)"/>
+          <path class="dash" d="M735 50 C790 60 800 95 811 112" marker-end="url(#arr)"/>
+          <path class="dash" d="M735 200 C790 192 800 155 811 138" marker-end="url(#arr)"/>
+          <path d="M887 88 V166 C887 190 300 235 108 168" marker-end="url(#arr)"/>
+        </g>
+        <style>.dash{stroke-dasharray:7 8;animation:dashmove 1.7s linear infinite}
+        @keyframes dashmove{to{stroke-dashoffset:-30}}</style>
+      </svg>
+    </div>
+    <div class="grid g4" style="margin-top:clamp(44px,7vh,72px)">
+      <div class="blk rv d2"><div class="bn">TIPO 01</div><h3>Tijolo</h3><p>Lajes, shoppings e galpões: <b>aluguel direto</b> por IGP-M.</p></div>
+      <div class="blk rv d3"><div class="bn">TIPO 02</div><h3>Papel</h3><p>Carteira de <b>CRI e LCI</b> — renda contratada, sensível a juros.</p></div>
+      <div class="blk rv d4"><div class="bn">TIPO 03</div><h3>Fundo de fundos</h3><p>Cotas de outros FIIs — <b>diversificação num ticker</b>.</p></div>
+      <div class="blk rv d5"><div class="bn">TIPO 04</div><h3>Desenvolvimento</h3><p>Capital para <b>construir</b> o ativo — mais risco, mais retorno.</p></div>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(44px,7vh,72px);padding-top:34px;border-top:1px solid var(--ln)">
+      <div class="stat rv d4"><div class="v">B3</div><div class="l">liquidez diária que o imóvel físico não tem</div></div>
+      <div class="stat rv d5"><div class="v wh">95%+</div><div class="l">do resultado semestral obrigatoriamente distribuído</div></div>
+      <div class="stat rv d6"><div class="v">PF</div><div class="l">rendimentos isentos quando o fundo atende aos requisitos</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 15 INDICADORES + SCATTER ============ -->
+<section id="indicadores" data-title="Indicadores & universo">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">15</span>
+      <div class="kicker"><span class="n">15</span>PARTE 4 · INDICADORES</div>
+      <h2 class="rv">O painel de bordo<br><em>do cotista.</em></h2>
+      <p class="lead rv d1">Ler um FII é ler o bairro através do papel. Passe o cursor nos pontos.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1">
+        <div class="ct"><span>Universo ilustrativo — P/VP × dividend yield</span><span class="cs">interativo · hover</span></div>
+        <svg id="scatter-svg" viewBox="0 0 760 430"></svg>
+        <div class="legend">
+          <span><i style="background:#CDFF57"></i>tijolo</span><span><i style="background:#FFB454"></i>papel</span>
+          <span><i style="background:#8FA08D"></i>fundo de fundos</span><span><i style="background:#FF8A6B"></i>desenvolvimento</span>
+        </div>
+      </div>
+      <div>
+        <ul class="list">
+          <li class="rv d2"><span><b>P/VP</b> — desconto persistente pede investigação; prêmio pede tese.</span></li>
+          <li class="rv d3"><span><b>Dividend yield</b> — compare contra a <b>taxa livre de risco</b>.</span></li>
+          <li class="rv d4"><span><b>Vacância</b> — a variável do bairro comprimindo a renda.</span></li>
+          <li class="rv d5"><span><b>Indexador e prazo</b> — onde o ciclo de juros mora.</span></li>
+          <li class="rv d6"><span><b>Liquidez</b> — volume define o custo de entrar e sair.</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(44px,7vh,72px)">
+      <div class="chart rv d3">
+        <div class="ct" style="font-size:13.5px"><span>P/VP mediano</span></div>
+        <svg viewBox="0 0 340 190" role="img" aria-label="P/VP por tipo">
+          <g font-size="11" fill="#8B9987">
+            <g class="pvp" data-v="0.90"><text x="96" y="34" text-anchor="end" fill="#F2F5EE" font-weight="600">Lajes</text><rect x="104" y="18" height="26" rx="7" fill="#CDFF57"/><text class="v" x="112" y="35" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="pvp" data-v="1.06"><text x="96" y="80" text-anchor="end" fill="#F2F5EE" font-weight="600">Logística</text><rect x="104" y="64" height="26" rx="7" fill="#CDFF57"/><text class="v" x="112" y="81" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="pvp" data-v="0.84"><text x="96" y="126" text-anchor="end" fill="#F2F5EE" font-weight="600">Papel</text><rect x="104" y="110" height="26" rx="7" fill="#FFB454"/><text class="v" x="112" y="127" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="pvp" data-v="0.98"><text x="96" y="172" text-anchor="end" fill="#F2F5EE" font-weight="600">FoF</text><rect x="104" y="156" height="26" rx="7" fill="#8FA08D"/><text class="v" x="112" y="173" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+          </g>
+        </svg>
+      </div>
+      <div class="chart rv d4">
+        <div class="ct" style="font-size:13.5px"><span>Vacância por segmento</span></div>
+        <svg viewBox="0 0 340 190" role="img" aria-label="Vacância por segmento">
+          <g font-size="11" fill="#8B9987">
+            <g class="vac" data-v="22"><text x="96" y="34" text-anchor="end" fill="#F2F5EE" font-weight="600">Lajes RJ</text><rect x="104" y="18" height="26" rx="7" fill="#FF8A6B"/><text class="v" x="112" y="35" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="vac" data-v="12"><text x="96" y="80" text-anchor="end" fill="#F2F5EE" font-weight="600">Lajes SP</text><rect x="104" y="64" height="26" rx="7" fill="#FFB454"/><text class="v" x="112" y="81" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="vac" data-v="4"><text x="96" y="126" text-anchor="end" fill="#F2F5EE" font-weight="600">Logística</text><rect x="104" y="110" height="26" rx="7" fill="#CDFF57"/><text class="v" x="112" y="127" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+            <g class="vac" data-v="2"><text x="96" y="172" text-anchor="end" fill="#F2F5EE" font-weight="600">Shoppings</text><rect x="104" y="156" height="26" rx="7" fill="#CDFF57"/><text class="v" x="112" y="173" fill="#0A0E0B" font-weight="700" font-size="10.5"></text></g>
+          </g>
+        </svg>
+      </div>
+      <div class="rv d5">
+        <div class="bn" style="font-family:var(--mono);font-size:10px;color:var(--lime);letter-spacing:.24em;margin-bottom:12px">COMO LER O SCATTER</div>
+        <ul class="list">
+          <li><span><b>Superior esquerdo</b> — desconto com renda: investigar por quê.</span></li>
+          <li><span><b>Superior direito</b> — prêmio: a tese precisa ser growth.</span></li>
+          <li><span><b>Linha de baixo</b> — compete com o CDI e perde.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 16 SELIC ============ -->
+<section id="selic" data-title="Selic & ciclo">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">16</span>
+      <div class="kicker"><span class="n">16</span>PARTE 4 · JUROS &amp; CICLO</div>
+      <h2 class="rv">A Selic é o <em>vento contrário.</em></h2>
+      <p class="lead rv d1">Arraste a Selic e veja quando o yield do fundo volta a ficar atraente frente ao CDI.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1">
+        <div class="ct"><span>Yield do FII vs CDI</span><span class="cs">interativo</span></div>
+        <svg id="selic-svg" viewBox="0 0 720 300"></svg>
+        <div class="slider-row">
+          <label>Selic / CDI (a.a.)</label>
+          <input type="range" id="selic-range" min="8" max="16" step="0.25" value="14.75">
+          <output id="selic-out">14,75%</output>
+        </div>
+      </div>
+      <div class="rv d2" style="display:flex;flex-direction:column;justify-content:center">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;border-top:1px solid var(--ln);padding-top:26px">
+          <div><div class="bn" style="font-family:var(--mono);font-size:10px;color:var(--mut);letter-spacing:.24em;margin-bottom:8px">SPREAD</div>
+          <div id="spread-val" style="font-size:44px;font-weight:700;letter-spacing:-.04em">−4,3 pp</div></div>
+          <div style="text-align:right"><div class="bn" style="font-family:var(--mono);font-size:10px;color:var(--mut);letter-spacing:.24em;margin-bottom:8px">YIELD FII</div>
+          <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--lime)">10,5%</div></div>
+        </div>
+        <p id="spread-msg" style="margin-top:18px;font-size:14.5px;color:var(--txt2);line-height:1.65"></p>
+        <ul class="list" style="margin-top:26px">
+          <li class="rv d3"><span><b>Papel</b> é o mais sensível: duration longa.</span></li>
+          <li class="rv d4"><span><b>Tijolo</b> amortecede — contratos e reversão.</span></li>
+          <li class="rv d5"><span><b>Horizonte longo</b>: juro alto = janela de desconto.</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 17 CARTEIRA ============ -->
+<section id="carteira" data-title="Construindo a carteira">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">17</span>
+      <div class="kicker"><span class="n">17</span>PARTE 5 · CONSTRUINDO A CARTEIRA</div>
+      <h2 class="rv">De um imóvel só<br>à <em>alocação.</em></h2>
+      <p class="lead rv d1">O bairro lido como dado, embalado em cotas — combinado em carteira com objetivo, prazo e risco explícitos.</p>
+    </div>
+    <div class="seg rv d1" role="tablist" aria-label="Perfil">
+      <button class="on" data-profile="conservador">Conservador</button>
+      <button data-profile="moderado">Moderado</button>
+      <button data-profile="arrojado">Arrojado</button>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(32px,4vh,44px)">
+      <div class="chart rv d2">
+        <div class="ct"><span>Perfil em 5 eixos</span><span class="cs">interativo</span></div>
+        <svg id="radar-svg" viewBox="0 0 340 320"></svg>
+      </div>
+      <div class="chart rv d3">
+        <div class="ct"><span id="alloc-title">Alocação</span><span class="cs" id="alloc-sub">renda estável</span></div>
+        <svg id="alloc-svg" viewBox="0 0 360 300"></svg>
+      </div>
+      <div class="rv d4" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="bn" id="prof-name" style="font-family:var(--mono);font-size:10px;color:var(--lime);letter-spacing:.24em;margin-bottom:12px">CONSERVADOR</div>
+        <p id="prof-desc" style="font-size:15px;color:var(--txt2);line-height:1.7"></p>
+        <ul class="list" id="prof-notes" style="margin-top:22px"></ul>
+      </div>
+    </div>
+    <p class="note rv d5">Alocações e perfis ilustrativos — não são recomendação.</p>
+  </div>
+</section>
+
+<!-- ============ 18 SIMULADOR ============ -->
+<section id="simulador" data-title="Simulador de carteira">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">18</span>
+      <div class="kicker"><span class="n">18</span>PARTE 5 · SIMULADOR</div>
+      <h2 class="rv">A renda composta<br><em>da carteira.</em></h2>
+      <p class="lead rv d1">Ajuste as premissas e veja o patrimônio evoluir — juros sobre juros fazendo o trabalho pesado.</p>
+    </div>
+    <div class="grid g12">
+      <div class="chart rv d1">
+        <div class="ct"><span>Evolução do patrimônio</span><span class="cs" id="sim-summary">—</span></div>
+        <svg id="sim-svg" viewBox="0 0 640 340"></svg>
+      </div>
+      <div class="chart rv d2">
+        <div class="ct" style="font-size:13.5px"><span>Premissas</span></div>
+        <div class="slider-row"><label>Aporte inicial</label><input type="range" id="sim-init" min="0" max="200000" step="5000" value="20000"><output id="sim-init-o">R$ 20 mil</output></div>
+        <div class="slider-row"><label>Aporte mensal</label><input type="range" id="sim-month" min="0" max="10000" step="100" value="1000"><output id="sim-month-o">R$ 1.000</output></div>
+        <div class="slider-row"><label>Yield anual</label><input type="range" id="sim-yield" min="6" max="16" step="0.25" value="10.5"><output id="sim-yield-o">10,5%</output></div>
+        <div class="slider-row"><label>Valorização anual</label><input type="range" id="sim-val" min="0" max="6" step="0.25" value="1.5"><output id="sim-val-o">1,5%</output></div>
+        <div class="slider-row"><label>Horizonte</label><input type="range" id="sim-years" min="5" max="40" step="1" value="20"><output id="sim-years-o">20 anos</output></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px 26px;margin-top:34px;border-top:1px solid var(--ln);padding-top:28px">
+          <div><div class="bn" style="font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.22em;margin-bottom:8px">PATRIMÔNIO FINAL</div>
+            <div id="sim-final" style="font-size:27px;font-weight:700;letter-spacing:-.03em;color:var(--lime)">—</div></div>
+          <div><div class="bn" style="font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.22em;margin-bottom:8px">RENDA MENSAL GERADA</div>
+            <div id="sim-income" style="font-size:27px;font-weight:700;letter-spacing:-.03em">—</div></div>
+          <div><div class="bn" style="font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.22em;margin-bottom:8px">TOTAL APORTADO</div>
+            <div id="sim-invested" style="font-family:var(--mono);font-size:19px;font-weight:700">—</div></div>
+          <div><div class="bn" style="font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.22em;margin-bottom:8px">JUROS + VALORIZAÇÃO</div>
+            <div id="sim-gain" style="font-family:var(--mono);font-size:19px;font-weight:700;color:var(--lime)">—</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="note rv d3">Simulação didática: aportes ao fim do mês, rendimento reinvestido, sem inflação, IR ou custos — o objetivo é visualizar o efeito composição.</p>
+  </div>
+</section>
+
+<!-- ============ 19 DIVERSIFICAÇÃO ============ -->
+<section id="divers" data-title="Diversificação">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">19</span>
+      <div class="kicker"><span class="n">19</span>PARTE 5 · DIVERSIFICAÇÃO</div>
+      <h2 class="rv">Não colocar o bairro<br><em>numa cota só.</em></h2>
+    </div>
+    <div class="grid g3">
+      <div class="blk rv d1"><div class="bn">EIXO 01</div><h3>Por tipo</h3><p>Tijolo + papel + FoF: <b>regimes de risco diferentes</b> no mesmo porta-malas.</p></div>
+      <div class="blk rv d2"><div class="bn">EIXO 02</div><h3>Por geografia</h3><p>SP, Rio, interior e logística: <b>ciclos dessincronizados</b>.</p></div>
+      <div class="blk rv d3"><div class="bn">EIXO 03</div><h3>Por prazo</h3><p>Curto + longo: <b>escada de vencimentos</b> renova a renda.</p></div>
+    </div>
+    <div class="grid g3" style="margin-top:clamp(44px,7vh,72px);padding-top:34px;border-top:1px solid var(--ln)">
+      <div class="stat rv d3"><div class="v" data-count="8" data-suffix="+">0</div><div class="l">fundos como ponto de partida</div></div>
+      <div class="stat rv d4"><div class="v wh" data-count="3">0</div><div class="l">regiões como meta mínima de cobertura</div></div>
+      <div class="stat rv d5"><div class="v" data-count="20" data-suffix="%">0</div><div class="l">teto por posição — acima, tese vira aposta</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 20 RISCOS ============ -->
+<section id="riscos" data-title="Matriz de riscos">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">20</span>
+      <div class="kicker"><span class="n">20</span>PARTE 6 · RISCOS</div>
+      <h2 class="rv">O que pode <em>dar errado.</em></h2>
+      <p class="lead rv d1">Carteira madura sabe qual risco está comprando em cada cota.</p>
+    </div>
+    <div class="tbl-scroll rv d1">
+        <p class="scroll-hint">arraste para o lado →</p><table>
+      <thead><tr><th>Risco</th><th>Como aparece</th><th>Mitigante</th><th>Severidade</th></tr></thead>
+      <tbody>
+        <tr><td>Vacância</td><td>Oferta excedente esvazia lajes e galpões</td><td>Diversificar geografia; monitorar estoque</td><td><span class="pill hot">alta</span></td></tr>
+        <tr><td>Taxa de juros</td><td>CDI alto reprecifica papel e comprime payout</td><td>Escada de vencimentos; misturar tijolo</td><td><span class="pill hot">alta</span></td></tr>
+        <tr><td>Liquidez</td><td>Fundo pequeno negocia com spread largo</td><td>Priorizar volume; limitar posição</td><td><span class="pill mid">média</span></td></tr>
+        <tr><td>Inadimplência</td><td>Inquilino relevante atrasa ou devolve</td><td>Concentração &lt; 20% por fundo</td><td><span class="pill mid">média</span></td></tr>
+        <tr><td>Regulatório</td><td>Mudança tributária ou de distribuição</td><td>Não alavancar tese fiscal</td><td><span class="pill mid">média</span></td></tr>
+        <tr><td>Gestão</td><td>GA fraca paga caro por ativo ruim</td><td>Histórico de aquisições e taxas</td><td><span class="pill mid">baixa*</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note rv d2">*Baixa frequência, alto impacto — o histórico do gestor é o único antídoto.</p>
+  </div>
+</section>
+
+<!-- ============ 21 TRIBUTAÇÃO ============ -->
+<section id="tributacao" data-title="Tributação">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">21</span>
+      <div class="kicker"><span class="n">21</span>PARTE 6 · TRIBUTAÇÃO</div>
+      <h2 class="rv">O detalhe que <em>muda a conta.</em></h2>
+    </div>
+    <div class="grid g2">
+      <div class="rv d1"><div class="bn" style="font-family:var(--mono);font-size:10px;color:var(--lime);letter-spacing:.24em;margin-bottom:18px">A FAVOR</div>
+        <ul class="list check">
+          <li><span><b>Rendimentos isentos</b> para PF quando o fundo atende aos requisitos (100+ cotistas, mercado organizado).</span></li>
+          <li><span><b>Distribuição obrigatória</b> de 95%+ do resultado semestral.</span></li>
+          <li><span><b>Ganho na venda</b>: IR de 20% só sobre o lucro.</span></li>
+        </ul></div>
+      <div class="rv d2"><div class="bn" style="font-family:var(--mono);font-size:10px;color:var(--ember);letter-spacing:.24em;margin-bottom:18px">CONTRA</div>
+        <ul class="list x">
+          <li><span><b>Não é isenção universal</b>: fora dos requisitos, tributa na fonte.</span></li>
+          <li><span><b>Day trade de cota</b> não aproveita a isenção — e adiciona risco.</span></li>
+          <li><span><b>Regra pode mudar</b>: a tese deve sobreviver sem o subsídio.</span></li>
+        </ul></div>
+    </div>
+    <p class="note rv d3">Resumo educacional — confira as regras vigentes antes de decidir.</p>
+  </div>
+</section>
+
+<!-- ============ 22 CASES ============ -->
+<section id="cases" data-title="Cases Brasil">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">22</span>
+      <div class="kicker"><span class="n">22</span>PARTE 6 · CASES BRASIL</div>
+      <h2 class="rv">Quem está <em>construindo isso.</em></h2>
+    </div>
+    <div class="grid g3">
+      <div class="blk rv d1"><div class="bn">01 · ALUGUEL</div><h3>QuintoAndar</h3><p>Unicórnio sobre <b>aluguel sem fiador</b> e dados proprietários de precificação.</p></div>
+      <div class="blk rv d2"><div class="bn">02 · IBUYING</div><h3>Loft</h3><p><b>Oferta firme por AVM</b>, reforma padronizada, revenda digital.</p></div>
+      <div class="blk rv d3"><div class="bn">03 · DADOS</div><h3>Hedge</h3><p><b>Inteligência imobiliária</b>: AVMs e índices que alimentam bancos e fundos.</p></div>
+      <div class="blk rv d4"><div class="bn">04 · CRÉDITO</div><h3>Tera</h3><p><b>Crédito imobiliário digital</b>, de ponta a ponta.</p></div>
+      <div class="blk rv d5"><div class="bn">05 · EQUITY</div><h3>Ceptis</h3><p><b>Home equity</b> originado por tecnologia.</p></div>
+      <div class="blk rv d6"><div class="bn">06 · PAPEL</div><h3>B3 &amp; gestores</h3><p><b>Centenas de FIIs listados</b> profissionalizando a renda do bairro.</p></div>
+    </div>
+    <div class="photo rv d4" style="margin-top:clamp(44px,7vh,72px)"><img loading="lazy" decoding="async" src="assets/neighborhood-wide.jpg" alt="Panorama urbano"><div class="cap"><b>em cada janela</b>, um dado sendo gerado — preço, prazo, vacância, inadimplência.</div></div>
+  </div>
+</section>
+
+<!-- ============ 23 TENDÊNCIAS ============ -->
+<section id="tendencias" data-title="Tendências">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">23</span>
+      <div class="kicker"><span class="n">23</span>PARTE 6 · TENDÊNCIAS</div>
+      <h2 class="rv">Para onde a stack <em>está indo.</em></h2>
+      <p class="lead rv d1">Todas apontam na mesma direção: mais dado, menos fricção, mais fração.</p>
+    </div>
+    <div class="grid g21">
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:clamp(28px,3vw,40px)">
+        <div class="blk rv d1"><div class="bn">VETOR 01</div><h3>IA generativa</h3><p>Busca conversacional e documentos em segundos — <b>a intermediação vira copiloto</b>.</p></div>
+        <div class="blk rv d2"><div class="bn">VETOR 02</div><h3>Dados alternativos</h3><p>Satélite, mobilidade e consumo estimam <b>vitalidade do bairro</b>.</p></div>
+        <div class="blk rv d3"><div class="bn">VETOR 03</div><h3>Embedded finance</h3><p>Crédito e seguro <b>dentro do fluxo</b> — o produto some na experiência.</p></div>
+        <div class="blk rv d4"><div class="bn">VETOR 04</div><h3>Fração regulada</h3><p>Tokenização rumo a <b>arcabouço claro</b> — o imóvel a público, cota a cota.</p></div>
+      </div>
+      <div class="photo rv d2"><img loading="lazy" decoding="async" src="assets/tower-wide.jpg" alt="Torre de vidro" style="height:400px"><div class="cap"><b>a cidade como plataforma</b> — cada edifício, um emissor de dados.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 24 CHECKLIST ============ -->
+<section id="checklist" data-title="Checklist interativo">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">24</span>
+      <div class="kicker"><span class="n">24</span>PARTE 6 · CHECKLIST</div>
+      <h2 class="rv">Due diligence<br><em>com pontuação.</em></h2>
+      <p class="lead rv d1">Marque o que você já verifica hoje — as perguntas do bairro e as do papel.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1">
+        <div class="ct"><span>Seu ritual de análise</span><span class="cs">interativo</span></div>
+        <div class="check-grid" id="check-grid"></div>
+      </div>
+      <div class="rv d2" style="display:flex;flex-direction:column;justify-content:center">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120"><circle class="ring-bg" cx="60" cy="60" r="50"/><circle class="ring-val" id="score-ring" cx="60" cy="60" r="50" transform="rotate(-90 60 60)"/></svg>
+          <div><div id="score-num" style="font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1">0<span style="font-size:19px;color:var(--mut)">/10</span></div>
+          <div id="score-label" style="font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--mut);text-transform:uppercase;margin-top:8px">comece a marcar</div></div>
+        </div>
+        <p id="score-msg" style="margin-top:24px;font-size:14.5px;color:var(--txt2);line-height:1.7">Cada item é um risco que você deixou de carregar sem saber. A meta não é 10/10 — é saber quais itens está deliberadamente pulando.</p>
+      </div>
+    </div>
+    <div class="quote rv d3">Se você não consegue explicar qual risco a cota carrega, você é o risco.</div>
+  </div>
+</section>
+
+<!-- ============ 25 CONCLUSÃO ============ -->
+<section id="conclusao" data-title="Conclusão">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">25</span>
+      <div class="kicker"><span class="n">25</span>CONCLUSÃO</div>
+      <h2 class="rv">A tecnologia comprime a distância<br><em>entre a rua e o portfólio.</em></h2>
+    </div>
+    <div class="grid g3">
+      <div class="blk rv d1"><div class="bn">01</div><h3>O bairro é informação</h3><p>Quem lê preço, vacância e velocidade primeiro decide melhor.</p></div>
+      <div class="blk rv d2"><div class="bn">02</div><h3>A stack industrializou o atrito</h3><p>Cada fricção ganhou uma camada de tecnologia em cima.</p></div>
+      <div class="blk rv d3"><div class="bn">03</div><h3>O FII leva o bairro à carteira</h3><p>Fração, liquidez e renda fecham o ciclo.</p></div>
+    </div>
+    <div class="quote rv d4" style="margin-top:clamp(48px,8vh,80px)">O investidor que entende o bairro na frente — e usa o veículo certo — constrói carteira melhor. <b style="color:var(--lime)">Do bairro à carteira.</b><small>SÍNTESE</small></div>
+  </div>
+</section>
+
+<!-- ============ 26 FOOTER ============ -->
+<footer id="fim" data-title="Fim">
+  <div class="wrap">
+    <div class="kicker"><span class="n">26</span>ENCERRAMENTO</div>
+    <h2 style="font-size:clamp(30px,4.2vw,52px);letter-spacing:-.04em;margin-bottom:clamp(36px,5vh,56px)">Do bairro à carteira.<br><em style="font-style:normal;color:var(--lime)">Feito com dados.</em></h2>
+    <div style="display:flex;justify-content:space-between;gap:44px;flex-wrap:wrap;align-items:flex-end">
+      <div class="disc">
+        <b>Aviso educacional.</b> Material informativo e educacional; não constitui recomendação de investimento.
+        Rentabilidade passada não garante resultados futuros. FIIs envolvem riscos de mercado, liquidez, crédito e regulatórios.
+        Gráficos e simuladores rotulados como ilustrativos não representam séries reais nem projeções.
+        Antes de investir, leia a lâmina de informações essenciais e consulte profissional certificado.
+      </div>
+      <div class="sig">
+        PROPTECH · DO BAIRRO À CARTEIRA<br>deck interativo · <b>2026</b><br>responsável · <b>José Edson da Costa</b><br><br>
+        <a class="top" href="#hero">↑ voltar ao início</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<div id="counter"><b>01</b> / <span id="ctotal">26</span></div>
+
+<script>
+(function(){
+"use strict";
+const $=(s,c)=>(c||document).querySelector(s);
+const $$=(s,c)=>Array.from((c||document).querySelectorAll(s));
+const BRL=v=>"R$ "+Math.round(v).toLocaleString("pt-BR");
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const ease=p=>1-Math.pow(1-p,3);
+
+/* ============ topbar / progress / counter ============ */
+const sections=$$("section[data-title], footer[data-title]");
+$("#ctotal").textContent=String(sections.length).padStart(2,"0");
+const topbar=$("#topbar");
+let current=0;
+const spy=new IntersectionObserver(es=>{
+  es.forEach(en=>{ if(en.isIntersecting){ current=sections.indexOf(en.target); sync(); }});
+},{threshold:0.3});
+sections.forEach(s=>spy.observe(s));
+function sync(){ $("#counter b").textContent=String(current+1).padStart(2,"0"); }
+addEventListener("scroll",()=>{
+  topbar.classList.toggle("scrolled",scrollY>40);
+  const max=document.documentElement.scrollHeight-innerHeight;
+  $("#progress").style.width=(max>0?scrollY/max*100:0)+"%";
+},{passive:true});
+
+/* hero parallax */
+const heroBg=$("#hero-bg");
+addEventListener("scroll",()=>{
+  const y=scrollY;
+  if(y<innerHeight*1.3 && !matchMedia("(prefers-reduced-motion:reduce)").matches)
+    heroBg.style.transform="translateY("+(y*0.28)+"px)";
+},{passive:true});
+
+/* keyboard nav */
+addEventListener("keydown",e=>{
+  if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+  if(["ArrowRight","ArrowDown","PageDown"].includes(e.key)){e.preventDefault();go(current+1);}
+  else if(["ArrowLeft","ArrowUp","PageUp"].includes(e.key)){e.preventDefault();go(current-1);}
+  else if(e.key==="Home"){e.preventDefault();go(0);}
+  else if(e.key==="End"){e.preventDefault();go(sections.length-1);}
+});
+function go(i){i=clamp(i,0,sections.length-1);sections[i].scrollIntoView({behavior:"smooth",block:"start"});}
+
+/* touch: swipe entre seções */
+let ty0=null;
+addEventListener("touchstart",e=>{ty0=e.touches[0].clientY;},{passive:true});
+addEventListener("touchend",e=>{
+  if(ty0===null)return;
+  const dy=e.changedTouches[0].clientY-ty0;
+  if(Math.abs(dy)>90 && getSelection().toString()==="") go(current+(dy<0?1:-1));
+  ty0=null;
+},{passive:true});
+
+/* touch: tooltip por toque (heatmap + scatter) */
+["heatmap","scatter-svg"].forEach(id=>{
+  const el=document.getElementById(id); if(!el)return;
+  el.addEventListener("touchstart",e=>{
+    const t=e.touches[0],c=document.elementFromPoint(t.clientX,t.clientY);
+    if(!c)return;
+    const cell=c.closest?c.closest(".hcell"):null;
+    if(cell){ showTip(`<b>${cell.dataset.region}</b><br>${cell.dataset.metric}: <b>${cell.dataset.val}</b><br><span class="tt-sub">${cell.dataset.extra}</span>`,t.clientX,t.clientY);
+      setTimeout(hideTip,2200); }
+  },{passive:true});
+});
+
+/* ticker duplicate */
+const tt=$("#ticker-track"); tt.innerHTML+=tt.innerHTML;
+
+/* ============ reveal + counters ============ */
+const rio=new IntersectionObserver(es=>{
+  es.forEach(en=>{ if(!en.isIntersecting)return; en.target.classList.add("in");
+    $$("[data-count]",en.target).forEach(animCount); rio.unobserve(en.target); });
+},{threshold:0.18});
+$$(".rv").forEach(el=>rio.observe(el));
+function animCount(el){
+  if(el.dataset.done) return; el.dataset.done="1";
+  const t=parseFloat(el.dataset.count),pre=el.dataset.prefix||"",suf=el.dataset.suffix||"";
+  const t0=performance.now(),dur=1200;
+  (function tick(now){ const p=clamp((now-t0)/dur,0,1);
+    el.textContent=pre+Math.round(t*ease(p)).toLocaleString("pt-BR")+suf;
+    if(p<1)requestAnimationFrame(tick); })(t0);
+}
+
+/* generic animated bars */
+const bio=new IntersectionObserver(es=>{
+  es.forEach(en=>{
+    if(!en.isIntersecting)return; const g=en.target; g.dataset.done="1"; bio.unobserve(g);
+    const rect=g.querySelector("rect"); if(!rect)return;
+    const scale=parseFloat(g.dataset.scale||"0"), frac=parseFloat(g.dataset.v||"1"), maxw=parseFloat(g.dataset.maxw||"420");
+    const t0=performance.now(),dur=900;
+    (function tick(now){ const p=ease(clamp((now-t0)/dur,0,1));
+      rect.setAttribute("width",String(Math.max(0,(scale?scale*frac:maxw*frac)*p)));
+      const vt=g.querySelector(".v");
+      if(vt){ const raw=parseFloat(vt.dataset.raw||"");
+        if(raw){ const fmt=Number.isInteger(raw)?String(raw):raw.toFixed(1).replace(".",",");
+          vt.textContent=fmt+(vt.dataset.suf||""); } }
+      if(p<1)requestAnimationFrame(tick); })(t0);
+  });
+},{threshold:0.3});
+$$("#custo-chart .cbar").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="46";
+  const vt=g.querySelector(".v");vt.dataset.raw=v;vt.dataset.suf="%";bio.observe(g);});
+$$(".bbar").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="2.2";
+  const vt=g.querySelector(".v");vt.dataset.raw=v;vt.dataset.suf=" dias";bio.observe(g);});
+$$(".pvp").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="170";
+  const vt=g.querySelector(".v");vt.dataset.raw=v;bio.observe(g);});
+$$(".vac").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="9";
+  const vt=g.querySelector(".v");vt.dataset.raw=v;vt.dataset.suf="%";bio.observe(g);});
+
+/* ============ tooltip ============ */
+const tip=$("#tooltip");
+function showTip(html,x,y){ tip.innerHTML=html; tip.style.opacity="1";
+  const r=tip.getBoundingClientRect();
+  tip.style.left=clamp(x+14,8,innerWidth-r.width-8)+"px";
+  tip.style.top=clamp(y-r.height-12,8,innerHeight-r.height-8)+"px"; }
+function hideTip(){ tip.style.opacity="0"; }
+
+/* ============ heatmap ============ */
+(function(){
+  const regions=[
+    {n:"Centro expandido",vals:{val:78,vac:22,dom:38,of:65}},
+    {n:"Faria Lima / Oeste",vals:{val:88,vac:10,dom:26,of:72}},
+    {n:"Zona Sul",vals:{val:64,vac:30,dom:52,of:45}},
+    {n:"Zona Norte",vals:{val:58,vac:35,dom:60,of:38}},
+    {n:"Zona Leste",vals:{val:71,vac:26,dom:44,of:80}},
+    {n:"ABC / Guarulhos",vals:{val:52,vac:42,dom:66,of:30}},
+    {n:"Campinas / RMC",vals:{val:74,vac:16,dom:30,of:55}},
+    {n:"Interior logístico",vals:{val:82,vac:8,dom:22,of:48}}
+  ];
+  const metrics=[
+    {k:"val",n:"Valorização 12m",fmt:v=>"+"+(v/10).toFixed(1).replace(".",",")+"%",tip:v=>"preço/m² subindo "+(v/10).toFixed(1)+"% a.a."},
+    {k:"vac",n:"Vacância",fmt:v=>v+"%",tip:v=>v+"% do estoque vagante"},
+    {k:"dom",n:"Days-on-market",fmt:v=>Math.round(v*2.2)+" d",tip:v=>"~"+Math.round(v*2.2)+" dias para vender"},
+    {k:"of",n:"Oferta nova",fmt:v=>Math.round(v/2)+" lanç.",tip:v=>Math.round(v/2)+" lançamentos/ano na região"}
+  ];
+  const col=v=>{ if(v>=70)return"#CDFF57"; if(v>=55)return"#B8E447"; if(v>=42)return"#8FA08D";
+    if(v>=30)return"#FFB454"; return"#FF8A6B"; };
+  const hm=$("#heatmap"); if(!hm)return;
+  let html='<div></div>'+metrics.map(m=>`<div class="hcollab">${m.n}</div>`).join("");
+  regions.forEach(r=>{
+    html+=`<div class="hrowlab">${r.n}</div>`;
+    metrics.forEach(m=>{
+      const v=r.vals[m.k], health=(m.k==="val")?v:(100-v);
+      html+=`<div class="hcell" style="background:${col(health)}" data-region="${r.n}" data-metric="${m.n}" data-val="${m.fmt(v)}" data-extra="${m.tip(v)}">${m.fmt(v)}</div>`;
+    });
+  });
+  hm.style.gridTemplateColumns="minmax(120px,1.3fr) repeat(4,1fr)";
+  hm.innerHTML=html;
+  hm.addEventListener("mousemove",e=>{
+    const c=e.target.closest(".hcell"); if(!c)return hideTip();
+    showTip(`<b>${c.dataset.region}</b><br>${c.dataset.metric}: <b>${c.dataset.val}</b><br><span class="tt-sub">${c.dataset.extra}</span>`,e.clientX,e.clientY);
+  });
+  hm.addEventListener("mouseleave",hideTip);
+})();
+
+/* ============ AVM ============ */
+(function(){
+  const reg=$("#avm-regiao"),tipo=$("#avm-tipo"),area=$("#avm-area"),estado=$("#avm-estado");
+  if(!reg)return;
+  const oArea=$("#avm-area-o"),oEst=$("#avm-estado-o"),out=$("#avm-out"),out2=$("#avm-out2");
+  const estLbl=v=>v<=-6?"p/ recuperar":v<=-2?"cuidada":v<4?"normal":v<8?"boa":"excelente";
+  function calc(){
+    const base=parseFloat(reg.value),tm=parseFloat(tipo.value),a=parseFloat(area.value),est=parseFloat(estado.value)/100;
+    const central=base*tm*a*(1+est);
+    out.textContent=BRL(central*0.94)+" – "+BRL(central*1.06);
+    out2.textContent=BRL(central);
+    oArea.textContent=a+" m²"; oEst.textContent=estLbl(parseFloat(estado.value));
+  }
+  [reg,tipo,area,estado].forEach(el=>el.addEventListener("input",calc)); calc();
+})();
+
+/* ============ stack ============ */
+(function(){
+  const svg=$("#stack-svg"); if(!svg)return;
+  const layers=[
+    {t:"Investimento",d:0,desc:"O destino: o imóvel dividido em cotas negociáveis — FIIs, fractional, crowdfunding e tokens. O bairro inteiro cabe numa linha da carteira.",ex:["FIIs","Fractional","Crowdfunding","Tokens"]},
+    {t:"Gestão",d:1,desc:"Locação, cobrança e manutenção como serviço: o proprietário ausente delega a operação a quem a executa em escala.",ex:["Locação as a service","Cobrança digital","Manutenção em rede"]},
+    {t:"Crédito",d:2,desc:"Financiamento e home equity digitais: análise com sinais alternativos, garantia por AVM e closing em dias.",ex:["Financiamento digital","Home equity","Crédito as a service"]},
+    {t:"Transação",d:3,desc:"iBuying e venda direta online: oferta firme com base em AVM — quem tem balanço assume o risco de prazo.",ex:["iBuying","Compra online","Reforma padronizada"]},
+    {t:"Descoberta",d:4,desc:"Marketplaces organizam a descoberta e geram, como subproduto, o dado de preço que alimenta todo o resto.",ex:["Portais","Busca com matching","Dados de oferta"]}
+  ];
+  let sel=0; const NS="http://www.w3.org/2000/svg";
+  function render(){
+    svg.innerHTML="";
+    const W=640,lh=56,gap=8,x0=150;
+    layers.forEach((L,i)=>{
+      const y=i*(lh+gap)+12;
+      const g=document.createElementNS(NS,"g"); g.style.cursor="pointer";
+      const wFull=W-x0-30, w=wFull*(1-i*0.045);
+      const r=document.createElementNS(NS,"rect");
+      r.setAttribute("x",x0);r.setAttribute("y",y);r.setAttribute("width",w);r.setAttribute("height",lh);r.setAttribute("rx",16);
+      r.setAttribute("fill",i===sel?"#CDFF57":"rgba(255,255,255,.04)");
+      g.appendChild(r);
+      const t=document.createElementNS(NS,"text");
+      t.setAttribute("x",x0+22);t.setAttribute("y",y+lh/2+5);
+      t.setAttribute("fill",i===sel?"#0A0E0B":"rgba(242,245,238,.82)");
+      t.setAttribute("font-size","15");t.setAttribute("font-weight","700");t.setAttribute("font-family","-apple-system,Inter,sans-serif");
+      t.textContent=(5-i)+". "+L.t; g.appendChild(t);
+      const n=document.createElementNS(NS,"text");
+      n.setAttribute("x",x0-16);n.setAttribute("y",y+lh/2+4);n.setAttribute("text-anchor","end");
+      n.setAttribute("fill",i===sel?"#CDFF57":"#5F6B5D");n.setAttribute("font-size","10");n.setAttribute("font-weight","700");
+      n.textContent="CAMADA "+(5-i); g.appendChild(n);
+      g.addEventListener("click",()=>{sel=i;render();detail();});
+      svg.appendChild(g);
+    });
+    const lbl=document.createElementNS(NS,"text");
+    lbl.setAttribute("x",150);lbl.setAttribute("y",322);lbl.setAttribute("fill","#5F6B5D");lbl.setAttribute("font-size","10.5");
+    lbl.textContent="↑ profundidade da transformação — da descoberta ao investimento fracionado";
+    svg.appendChild(lbl);
+  }
+  function detail(){
+    const L=layers[sel];
+    $("#sd-num").textContent="CAMADA "+(5-sel);
+    $("#sd-title").textContent=L.t;
+    $("#sd-desc").textContent=L.desc;
+    $("#sd-ex").innerHTML=L.ex.map(e=>`<span class="pill ok">${e}</span>`).join("");
+  }
+  render();detail();
+})();
+
+/* ============ spectrum ============ */
+(function(){
+  const svg=$("#spectrum-svg"); if(!svg)return;
+  const stops=[
+    {x:60,n:"Imóvel direto",desc:"Um imóvel inteiro, um só bairro, um só inquilino. Máxima exposição, zero diversificação — a renda é real, mas o risco é concentrado.",ticket:"altíssimo",liq:"meses",reg:"societário",tc:"hot"},
+    {x:230,n:"CRI / LCI",desc:"Recebíveis de crédito imobiliário: você empresta para o mercado em vez de comprar o imóvel. Renda contratada, liquidez só no vencimento.",ticket:"médio",liq:"vencimento",reg:"CVM",tc:"mid"},
+    {x:400,n:"Crowdfunding",desc:"Projetos de desenvolvimento com retorno no fim da obra. Ticket baixo, capital preso, risco de execução.",ticket:"baixo",liq:"baixa",reg:"CVM",tc:"mid"},
+    {x:570,n:"Fractional / token",desc:"Fração de um imóvel rentável — ou de vários, via token. A promessa de liquidez nativa ainda depende de mercado comprador e regulação.",ticket:"baixo",liq:"emergente",reg:"em construção",tc:"mid"},
+    {x:800,n:"FII listado",desc:"Carteira inteira de ativos negociada em bolsa. Ticket mínimo, liquidez diária e regulação plena — o destino da jornada de fracionamento.",ticket:"mínimo",liq:"diária",reg:"plena",tc:"ok"}
+  ];
+  const NS="http://www.w3.org/2000/svg";
+  const grad=document.createElementNS(NS,"linearGradient");
+  grad.id="specg";grad.setAttribute("x1","0");grad.setAttribute("x2","1");
+  [["0","#FF8A6B"],["0.5","#FFB454"],["1","#CDFF57"]].forEach(s=>{
+    const st=document.createElementNS(NS,"stop");st.setAttribute("offset",s[0]);st.setAttribute("stop-color",s[1]);grad.appendChild(st);});
+  const defs=document.createElementNS(NS,"defs");defs.appendChild(grad);svg.appendChild(defs);
+  const base=document.createElementNS(NS,"rect");
+  base.setAttribute("x",40);base.setAttribute("y",108);base.setAttribute("width",790);base.setAttribute("height",8);
+  base.setAttribute("rx",4);base.setAttribute("fill","url(#specg)");base.setAttribute("opacity",".9");svg.appendChild(base);
+  const marker=document.createElementNS(NS,"g");
+  const mc=document.createElementNS(NS,"circle");mc.setAttribute("cy",112);mc.setAttribute("cx",440);mc.setAttribute("r",12);
+  mc.setAttribute("fill","#0A0E0B");mc.setAttribute("stroke","#F2F5EE");mc.setAttribute("stroke-width","3");
+  const mi=document.createElementNS(NS,"circle");mi.setAttribute("cy",112);mi.setAttribute("cx",440);mi.setAttribute("r",4);mi.setAttribute("fill","#CDFF57");
+  marker.appendChild(mc);marker.appendChild(mi);svg.appendChild(marker);
+  stops.forEach(s=>{
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("x",s.x);t.setAttribute("y",150);t.setAttribute("text-anchor","middle");
+    t.setAttribute("fill","#8B9987");t.setAttribute("font-size","11.5");t.setAttribute("font-weight","650");
+    t.textContent=s.n;svg.appendChild(t);
+    const hit=document.createElementNS(NS,"circle");
+    hit.setAttribute("cx",s.x);hit.setAttribute("cy",112);hit.setAttribute("r",26);hit.setAttribute("fill","transparent");hit.style.cursor="pointer";
+    hit.addEventListener("click",()=>set(s));
+    hit.addEventListener("mousemove",e=>showTip(`<b>${s.n}</b><br><span class="tt-sub">clique para fixar</span>`,e.clientX,e.clientY));
+    hit.addEventListener("mouseleave",hideTip);
+    svg.appendChild(hit);
+  });
+  const hint=document.createElementNS(NS,"text");
+  hint.setAttribute("x",440);hint.setAttribute("y",84);hint.setAttribute("text-anchor","middle");
+  hint.setAttribute("fill","#5F6B5D");hint.setAttribute("font-size","11");
+  hint.textContent="ticket ↓   ·   liquidez ↑   ·   regulação ↑";svg.appendChild(hint);
+  let cur=null;
+  function set(s){
+    cur=s;
+    marker.style.transition="transform .45s cubic-bezier(.2,.65,.25,1)";
+    marker.setAttribute("transform",`translate(${s.x-440},0)`);
+    mi.setAttribute("fill",s.x===800?"#CDFF57":s.x===60?"#FF8A6B":"#FFB454");
+    $("#sp-name").textContent=s.n;$("#sp-desc").textContent=s.desc;
+    $("#sp-ticket").textContent=s.ticket;$("#sp-liq").textContent=s.liq;$("#sp-reg").textContent=s.reg;
+    const colr=s.tc==="ok"?"var(--lime)":s.tc==="mid"?"var(--amber)":"var(--ember)";
+    ["ticket","liq","reg"].forEach(k=>$("#sp-"+k).style.color=colr);
+  }
+  svg.addEventListener("mousemove",e=>{
+    if(cur)return;
+    const r=svg.getBoundingClientRect();
+    const x=clamp((e.clientX-r.left)/r.width*900,60,840);
+    marker.setAttribute("transform",`translate(${x-440},0)`);
+  });
+  set(stops[4]);
+})();
+
+/* ============ scatter ============ */
+(function(){
+  const svg=$("#scatter-svg"); if(!svg)return;
+  const W=760,H=430,pad={l:56,r:20,t:18,b:46};
+  const funds=[
+    {n:"Lajes Prime SP",t:"tijolo",pvp:1.02,dy:9.2,pat:2.4},{n:"Lajes RJ Corp",t:"tijolo",pvp:0.78,dy:12.1,pat:1.1},
+    {n:"Logística Interior",t:"tijolo",pvp:1.12,dy:8.4,pat:3.2},{n:"Galpões Região SP",t:"tijolo",pvp:1.18,dy:7.6,pat:2.8},
+    {n:"Shoppings Regionais",t:"tijolo",pvp:0.95,dy:10.3,pat:1.9},{n:"Hiability Lajes",t:"tijolo",pvp:0.88,dy:10.8,pat:0.7},
+    {n:"Papel Curto Prazo",t:"papel",pvp:0.98,dy:9.8,pat:2.1},{n:"Papel IGPM+Fixo",t:"papel",pvp:0.84,dy:11.9,pat:1.5},
+    {n:"Recebíveis Corporativos",t:"papel",pvp:0.92,dy:10.6,pat:0.9},{n:"FoF Multigestão",t:"fof",pvp:0.96,dy:9.9,pat:0.6},
+    {n:"FoF Renda Mensal",t:"fof",pvp:1.05,dy:9.1,pat:0.5},{n:"Desenvolvimento UX",t:"dev",pvp:0.82,dy:12.8,pat:0.4},
+    {n:"Estruturado Cresce+",t:"dev",pvp:0.74,dy:13.4,pat:0.3},{n:"Híbrido Carteira",t:"fof",pvp:1.00,dy:9.6,pat:1.2}
+  ];
+  const colors={tijolo:"#CDFF57",papel:"#FFB454",fof:"#8FA08D",dev:"#FF8A6B"};
+  const x=v=>pad.l+(v-0.6)/(1.4-0.6)*(W-pad.l-pad.r);
+  const y=v=>H-pad.b-(v-6.5)/(14-6.5)*(H-pad.t-pad.b);
+  const NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e;}
+  for(let pvp=0.6;pvp<=1.4001;pvp+=0.2){
+    el("line",{x1:x(pvp),y1:pad.t,x2:x(pvp),y2:H-pad.b,stroke:"rgba(255,255,255,.05)"});
+    el("text",{x:x(pvp),y:H-pad.b+20,"text-anchor":"middle",fill:"#5F6B5D","font-size":"11"}).textContent=pvp.toFixed(1).replace(".",",");
+  }
+  for(let d=7;d<=14;d+=1){
+    el("line",{x1:pad.l,y1:y(d),x2:W-pad.r,y2:y(d),stroke:"rgba(255,255,255,.05)"});
+    el("text",{x:pad.l-10,y:y(d)+4,"text-anchor":"end",fill:"#5F6B5D","font-size":"11"}).textContent=d+"%";
+  }
+  el("line",{x1:x(1),y1:pad.t,x2:x(1),y2:H-pad.b,stroke:"rgba(255,255,255,.16)","stroke-dasharray":"4 7"});
+  el("line",{x1:pad.l,y1:y(10.5),x2:W-pad.r,y2:y(10.5),stroke:"rgba(205,255,87,.28)","stroke-dasharray":"4 7"});
+  el("text",{x:W-pad.r-4,y:y(10.5)-8,"text-anchor":"end",fill:"#CDFF57","font-size":"10.5",opacity:".8"}).textContent="yield médio 10,5%";
+  el("text",{x:W-pad.r,y:H-10,"text-anchor":"end",fill:"#5F6B5D","font-size":"11"}).textContent="P/VP →";
+  el("text",{x:14,y:pad.t+6,fill:"#5F6B5D","font-size":"11",transform:`rotate(-90 14 ${pad.t+6})`,"text-anchor":"end"}).textContent="dividend yield →";
+  el("text",{x:x(0.68),y:y(13.6),fill:"rgba(242,245,238,.22)","font-size":"10.5","font-weight":"700"}).textContent="DESCONTO + RENDA";
+  el("text",{x:x(1.32),y:y(13.6),"text-anchor":"end",fill:"rgba(242,245,238,.22)","font-size":"10.5","font-weight":"700"}).textContent="PRÊMIO + RENDA";
+  el("text",{x:x(0.68),y:y(7),fill:"rgba(242,245,238,.22)","font-size":"10.5","font-weight":"700"}).textContent="COMPETE COM CDI";
+  funds.forEach(f=>{
+    const r=8+Math.sqrt(f.pat)*7;
+    const g=el("g",{style:"cursor:pointer"});
+    const c=el("circle",{cx:x(f.pvp),cy:y(f.dy),r:0,fill:colors[f.t],opacity:.85,stroke:"#0A0E0B","stroke-width":"2"},g);
+    const tipHTML=()=>`<b>${f.n}</b><br>P/VP ${f.pvp.toFixed(2).replace(".",",")} · DY ${f.dy.toFixed(1).replace(".",",")}%<br><span class="tt-sub">tipo: ${f.t==="fof"?"fundo de fundos":f.t==="dev"?"desenvolvimento":f.t} · patrimônio ilustrativo R$ ${f.pat.toFixed(1)} bi</span>`;
+    g.addEventListener("mouseenter",e=>{c.setAttribute("opacity","1");showTip(tipHTML(),e.clientX,e.clientY);});
+    g.addEventListener("mousemove",e=>showTip(tipHTML(),e.clientX,e.clientY));
+    g.addEventListener("mouseleave",()=>{c.setAttribute("opacity",".85");hideTip();});
+    const t0=performance.now()+Math.random()*350,dur=650;
+    (function tick(now){const p=ease(clamp((now-t0)/dur,0,1));c.setAttribute("r",String(r*p));if(p<1)requestAnimationFrame(tick);})(performance.now());
+  });
+})();
+
+/* ============ selic ============ */
+(function(){
+  const svg=$("#selic-svg"); if(!svg)return;
+  const W=720,H=300,pad={l:52,r:20,t:16,b:40};
+  const NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||svg).appendChild(e);return e;}
+  const YieldLine=10.5;
+  const x=v=>pad.l+(v-6)/(16-6)*(W-pad.l-pad.r);
+  const y=v=>H-pad.b-(v-6)/(16-6)*(H-pad.t-pad.b);
+  for(let v=6;v<=16;v+=2){el("line",{x1:x(v),y1:pad.t,x2:x(v),y2:H-pad.b,stroke:"rgba(255,255,255,.05)"});
+    el("text",{x:x(v),y:H-pad.b+20,"text-anchor":"middle",fill:"#5F6B5D","font-size":"10.5"}).textContent=v+"%";}
+  for(let v=6;v<=16;v+=2){el("text",{x:pad.l-8,y:y(v)+4,"text-anchor":"end",fill:"#5F6B5D","font-size":"10.5"}).textContent=v+"%";}
+  const cdiPts=[];for(let v=6;v<=16;v+=0.25)cdiPts.push([x(v),y(v)]);
+  el("polyline",{points:cdiPts.map(p=>p.join(",")).join(" "),fill:"none",stroke:"#FFB454","stroke-width":"2","stroke-dasharray":"7 7"});
+  el("text",{x:x(15.9),y:y(15.4),"text-anchor":"end",fill:"#FFB454","font-size":"11.5","font-weight":"700"}).textContent="CDI (45°)";
+  el("line",{x1:pad.l,y1:y(YieldLine),x2:W-pad.r,y2:y(YieldLine),stroke:"#CDFF57","stroke-width":"2.5"});
+  el("text",{x:W-pad.r-6,y:y(YieldLine)-10,"text-anchor":"end",fill:"#CDFF57","font-size":"11.5","font-weight":"700"}).textContent="yield FII líquido 10,5%";
+  const zone=el("rect",{x:pad.l,y:0,width:0,height:0,fill:"rgba(255,138,107,.09)"});
+  const marker=el("circle",{r:9,fill:"#0A0E0B",stroke:"#CDFF57","stroke-width":"3.5"});
+  const mlabel=el("text",{fill:"#F2F5EE","font-size":"11","font-weight":"700"});
+  const range=$("#selic-range"),out=$("#selic-out");
+  function upd(){
+    const s=parseFloat(range.value);
+    out.textContent=s.toFixed(2).replace(".",",")+"%";
+    marker.setAttribute("cx",x(s));marker.setAttribute("cy",y(s));
+    mlabel.setAttribute("x",x(s));mlabel.setAttribute("y",y(s)-16);mlabel.setAttribute("text-anchor","middle");
+    mlabel.textContent="Selic "+s.toFixed(2).replace(".",",")+"%";
+    const spread=YieldLine-s,sv=$("#spread-val");
+    sv.textContent=(spread>0?"+":"−")+Math.abs(spread).toFixed(1).replace(".",",")+" pp";
+    sv.style.color=spread>0?"var(--lime)":"var(--ember)";
+    if(spread>=1){zone.setAttribute("y",y(YieldLine));zone.setAttribute("height",y(s)-y(YieldLine));zone.setAttribute("fill","rgba(205,255,87,.07)");}
+    else{zone.setAttribute("y",y(s));zone.setAttribute("height",y(YieldLine)-y(s));zone.setAttribute("fill","rgba(255,138,107,.09)");}
+    zone.setAttribute("x",pad.l);zone.setAttribute("width",W-pad.r-pad.l);
+    const msg=$("#spread-msg");
+    if(spread<=-2.5)msg.textContent="CDI muito acima do yield: o fluxo migra para renda fixa — historicamente, a zona onde cotas negociam com desconto.";
+    else if(spread<=0)msg.textContent="CDI ainda supera o yield, mas a margem encolheu — o mercado começa a olhar cotas de novo.";
+    else msg.textContent="Yield acima do CDI: o FII volta a pagar prêmio pela liquidez — zona historicamente de fluxo retornando.";
+  }
+  range.addEventListener("input",upd);upd();
+})();
+
+/* ============ radar + alloc ============ */
+(function(){
+  const profiles={
+    conservador:{axes:[8,4,7,3,3],alloc:[45,30,20,5],name:"CONSERVADOR",sub:"renda estável",
+      desc:"Fluxo de caixa mensal previsível, com valorização como bônus. Âncora em papel curto e lajes prime; caixa para comprar descontos na queda.",
+      notes:["<b>Âncora:</b> papel curto + lajes prime","<b>Duração baixa</b> nos recebíveis","<b>Caixa tático</b> para descontos"]},
+    moderado:{axes:[7,6,6,5,4],alloc:[30,25,30,15],name:"MODERADO",sub:"renda + valorização",
+      desc:"Renda mensal com participação no crescimento dos ativos. Logística e lajes dividem a liderança; papel médio prazo reinveste a cada vencimento.",
+      notes:["<b>Equilíbrio</b> tijolo × papel","<b>Logística</b> com peso relevante","<b>Reinvestimento</b> sistemático"]},
+    arrojado:{axes:[5,9,5,8,6],alloc:[15,20,35,30],name:"ARROJADO",sub:"valorização",
+      desc:"Capturar reprecificação de ativos e ciclos de queda de juros. Peso relevante em desenvolvimento e fundos com desconto — com estômago para drawdown.",
+      notes:["<b>Tese</b> de ciclo e reprecificação","<b>Descontos de P/VP</b> como alvo","<b>Tolerância</b> a volatilidade"]}
+  };
+  const axisNames=["RENDA","VALORIZ.","LIQUIDEZ","RISCO","COMPLEX."];
+  const rsvg=$("#radar-svg"),asvg=$("#alloc-svg"); if(!rsvg)return;
+  const NS="http://www.w3.org/2000/svg";
+  const cx=170,cy=160,R=105,N=5;
+  const pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[cx+Math.cos(a)*R*v/10,cy+Math.sin(a)*R*v/10];};
+  function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||rsvg).appendChild(e);return e;}
+  [2.5,5,7.5,10].forEach(v=>{el("polygon",{points:[...Array(N)].map((_,i)=>pt(i,v).join(",")).join(" "),fill:"none",stroke:"rgba(255,255,255,.06)"});});
+  [...Array(N)].forEach((_,i)=>{
+    const p=pt(i,10);el("line",{x1:cx,y1:cy,x2:p[0],y2:p[1],stroke:"rgba(255,255,255,.06)"});
+    const l=pt(i,12.4);
+    el("text",{x:l[0],y:l[1]+3,"text-anchor":"middle",fill:"#5F6B5D","font-size":"9.5","font-weight":"700"}).textContent=axisNames[i];
+  });
+  let curPoly=null,curDots=[];let fromAxes=[8,4,7,3,3];
+  function drawAxes(vals){
+    if(!curPoly){curPoly=el("polygon",{fill:"rgba(205,255,87,.1)",stroke:"#CDFF57","stroke-width":"2","stroke-linejoin":"round"});
+      for(let i=0;i<N;i++)curDots.push(el("circle",{r:3.5,fill:"#CDFF57"}));}
+    curPoly.setAttribute("points",[...Array(N)].map((_,i)=>pt(i,vals[i]).join(",")).join(" "));
+    curDots.forEach((d,i)=>{const p=pt(i,vals[i]);d.setAttribute("cx",p[0]);d.setAttribute("cy",p[1]);});
+  }
+  function animTo(target){
+    const start=fromAxes.slice(),t0=performance.now(),dur=550;
+    (function tick(now){const p=ease(clamp((now-t0)/dur,0,1));
+      drawAxes(start.map((v,i)=>v+(target[i]-v)*p));
+      if(p<1)requestAnimationFrame(tick);else fromAxes=target.slice();})(t0);
+  }
+  drawAxes(fromAxes);
+  const allocRows=[{n:"Papel (CRI/LCI)",c:"#8FA08D",tc:"#F2F5EE"},{n:"Lajes / tijolo",c:"#CDFF57",tc:"#0A0E0B"},
+    {n:"Logística & shoppings",c:"#B8E447",tc:"#0A0E0B"},{n:"Desenvolvimento",c:"#FF8A6B",tc:"#0A0E0B"}];
+  function drawAlloc(vals){
+    asvg.innerHTML="";
+    const x0=150,maxw=180;
+    allocRows.forEach((r,i)=>{
+      const yy=i*64+14;
+      const t=document.createElementNS(NS,"text");
+      t.setAttribute("x",x0-14);t.setAttribute("y",yy+26);t.setAttribute("text-anchor","end");
+      t.setAttribute("fill","#8B9987");t.setAttribute("font-size","12");t.setAttribute("font-weight","600");
+      t.textContent=r.n;asvg.appendChild(t);
+      const rect=document.createElementNS(NS,"rect");
+      rect.setAttribute("x",x0);rect.setAttribute("y",yy);rect.setAttribute("height",34);rect.setAttribute("rx",10);
+      rect.setAttribute("fill",r.c);rect.setAttribute("width","0");asvg.appendChild(rect);
+      const v=document.createElementNS(NS,"text");
+      v.setAttribute("x",x0+14);v.setAttribute("y",yy+23);v.setAttribute("fill",r.tc);
+      v.setAttribute("font-size","13");v.setAttribute("font-weight","700");asvg.appendChild(v);
+      const t0=performance.now(),dur=700,target=vals[i];
+      (function tick(now){const p=ease(clamp((now-t0)/dur,0,1));
+        rect.setAttribute("width",String(maxw*target*p/50));v.textContent=Math.round(target*p)+"%";
+        if(p<1)requestAnimationFrame(tick);})(t0);
+    });
+  }
+  function setProfile(key){
+    const P=profiles[key];
+    animTo(P.axes);drawAlloc(P.alloc);
+    $("#alloc-title").textContent="Alocação";$("#alloc-sub").textContent=P.sub;
+    $("#prof-name").textContent=P.name;$("#prof-desc").textContent=P.desc;
+    $("#prof-notes").innerHTML=P.notes.map(n=>`<li><span>${n}</span></li>`).join("");
+    $$(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.profile===key));
+  }
+  $$(".seg button").forEach(b=>b.addEventListener("click",()=>setProfile(b.dataset.profile)));
+  setProfile("conservador");
+})();
+
+/* ============ simulador ============ */
+(function(){
+  const ssvg=$("#sim-svg"); if(!ssvg)return;
+  const ids=["sim-init","sim-month","sim-yield","sim-val","sim-years"];
+  const outs={};ids.forEach(id=>outs[id]=$("#"+id+"-o"));
+  const NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);(parent||ssvg).appendChild(e);return e;}
+  const W=640,H=340,pad={l:64,r:16,t:18,b:38};
+  const fmtShort=v=>v>=1e6?(v/1e6).toFixed(v>=1e7?0:1).replace(".",",")+"M":(v/1e3).toFixed(0)+"k";
+  function series(init,month,yr,val,years){
+    const mr=Math.pow(1+yr/100,1/12)-1,mv=Math.pow(1+val/100,1/12)-1;
+    const ptsInv=[],ptsPat=[];let pat=init,inv=init;
+    ptsInv.push([0,inv]);ptsPat.push([0,pat]);
+    for(let m=1;m<=years*12;m++){pat=pat*(1+mr+mv)+month;inv+=month;
+      if(m%6===0||m===years*12){ptsInv.push([m/12,inv]);ptsPat.push([m/12,pat]);}}
+    return{ptsPat,ptsInv,final:pat,invested:inv};
+  }
+  function render(){
+    const init=+$("#sim-init").value,month=+$("#sim-month").value,yr=+$("#sim-yield").value,val=+$("#sim-val").value,years=+$("#sim-years").value;
+    outs["sim-init"].textContent=init?"R$ "+(init/1000).toFixed(0)+" mil":"R$ 0";
+    outs["sim-month"].textContent=month?"R$ "+month.toLocaleString("pt-BR"):"R$ 0";
+    outs["sim-yield"].textContent=yr.toFixed(2).replace(".",",")+"%";
+    outs["sim-val"].textContent=val.toFixed(2).replace(".",",")+"%";
+    outs["sim-years"].textContent=years+" anos";
+    const s=series(init,month,yr,val,years);
+    const maxV=Math.max(s.final,s.invested)*1.06||1;
+    const X=yy=>pad.l+yy/years*(W-pad.l-pad.r);
+    const Y=v=>H-pad.b-v/maxV*(H-pad.t-pad.b);
+    ssvg.innerHTML="";
+    for(let i=0;i<=4;i++){const v=maxV*i/4,yy=Y(v);
+      el("line",{x1:pad.l,y1:yy,x2:W-pad.r,y2:yy,stroke:"rgba(255,255,255,.05)"});
+      el("text",{x:pad.l-8,y:yy+4,"text-anchor":"end",fill:"#5F6B5D","font-size":"10"}).textContent=fmtShort(v);}
+    for(let i=0;i<=4;i++){const yy=i/4*years;
+      el("text",{x:X(yy),y:H-pad.b+20,"text-anchor":"middle",fill:"#5F6B5D","font-size":"10"}).textContent=Math.round(yy)+"a";}
+    const toPath=pts=>pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join(" ");
+    el("path",{d:toPath(s.ptsInv),fill:"none",stroke:"#5F6B5D","stroke-width":"1.5","stroke-dasharray":"5 7"});
+    const areaPts=toPath(s.ptsPat),last=s.ptsPat[s.ptsPat.length-1];
+    el("path",{d:`${areaPts} L${X(last[0])} ${Y(0)} L${X(0)} ${Y(0)} Z`,fill:"rgba(205,255,87,.07)"});
+    el("path",{d:areaPts,fill:"none",stroke:"#CDFF57","stroke-width":"2.5","stroke-linecap":"round"});
+    el("circle",{cx:X(last[0]),cy:Y(last[1]),r:5,fill:"#CDFF57",stroke:"#0A0E0B","stroke-width":"2"});
+    el("rect",{x:pad.l+8,y:pad.t+4,width:12,height:2.5,rx:1.2,fill:"#CDFF57"});
+    el("text",{x:pad.l+26,y:pad.t+9,fill:"#8B9987","font-size":"11"}).textContent="patrimônio (juros + valorização)";
+    el("rect",{x:pad.l+8,y:pad.t+22,width:12,height:2.5,rx:1.2,fill:"#5F6B5D"});
+    el("text",{x:pad.l+26,y:pad.t+27,fill:"#5F6B5D","font-size":"11"}).textContent="total aportado";
+    $("#sim-final").textContent=BRL(s.final);
+    const mr=Math.pow(1+yr/100,1/12)-1;
+    $("#sim-income").textContent=BRL(s.final*mr);
+    $("#sim-invested").textContent=BRL(s.invested);
+    const gain=s.final-s.invested;
+    $("#sim-gain").textContent=(gain>=0?"+":"−")+BRL(Math.abs(gain));
+    $("#sim-gain").style.color=gain>=0?"var(--lime)":"var(--ember)";
+    $("#sim-summary").textContent=`${years} anos · ${BRL(init)} inicial · ${BRL(month)}/mês`;
+  }
+  ids.forEach(id=>$("#"+id).addEventListener("input",render));render();
+})();
+
+/* ============ checklist ============ */
+(function(){
+  const items=[
+    ["Vacância da região em tendência de queda?","bairro"],
+    ["Oferta nova competindo com os ativos do fundo?","bairro"],
+    ["Preço/m² local consistente com a tese?","bairro"],
+    ["P/VP frente à própria história do fundo?","papel"],
+    ["Concentração de inquilino / região / indexador?","papel"],
+    ["Volume negociado permite sair sem destruir preço?","papel"],
+    ["Histórico e taxas do gestor verificados?","gestão"],
+    ["Indexador e prazo das receitas mapeados?","gestão"],
+    ["Alocação dentro do teto da carteira?","carteira"],
+    ["Cenário de juros testado antes de comprar?","carteira"]
+  ];
+  const grid=$("#check-grid"); if(!grid)return;
+  grid.innerHTML=items.map(it=>`
+    <label class="chk"><input type="checkbox"><span class="box">✓</span>
+    <span class="txt"><b style="color:var(--lime);font-family:var(--mono);font-size:9px;letter-spacing:.2em">${it[1].toUpperCase()}</b><br>${it[0]}</span></label>`).join("");
+  const ring=$("#score-ring"),CIRC=2*Math.PI*50;
+  ring.style.strokeDasharray=CIRC;ring.style.strokeDashoffset=CIRC;
+  function upd(){
+    const done=$$("#check-grid input:checked").length;
+    $("#score-num").innerHTML=done+'<span style="font-size:19px;color:var(--mut)">/10</span>';
+    ring.style.strokeDashoffset=CIRC*(1-done/10);
+    const pct=done/10;
+    ring.style.stroke=pct>=.8?"var(--lime)":pct>=.5?"var(--amber)":"var(--ember)";
+    const lbl=$("#score-label"),msg=$("#score-msg");
+    if(done<=3){lbl.textContent="roteiro básico";msg.innerHTML="Base em construção — antes do próximo aporte, priorize <b>região e liquidez</b>: são os que mais surpreendem.";}
+    else if(done<=6){lbl.textContent="analista de bairro";msg.innerHTML="Você já enxerga o fundo como aposta regional. Complete com <b>indexadores e prazo</b> — onde o ciclo de juros mora.";}
+    else if(done<=9){lbl.textContent="cotista de dados";msg.innerHTML="Ritual sólido — a maioria dos riscos nomeáveis já passa pelo seu filtro antes de virar posição.";}
+    else{lbl.textContent="institucional";msg.innerHTML="Roteiro completo. O próximo nível está em <b>acompanhar a tese depois da compra</b> e rebalancear quando ela mudar.";}
+  }
+  grid.addEventListener("change",upd);upd();
+})();
+
+})();
+</script>
+</body>
+</html>
