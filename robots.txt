@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://joseedson18jc.github.io/proptech-carteira/sitemap.xml

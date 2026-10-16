@@ -7,6 +7,23 @@
 <meta name="description" content="Como a tecnologia transforma o imóvel de tijolo em ativo financeiro — da escolha do bairro à carteira diversificada de fundos imobiliários. Deck interativo com simuladores e dados.">
 <meta name="author" content="José Edson da Costa">
 <meta name="theme-color" content="#0A0E0B">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://joseedson18jc.github.io/proptech-carteira/">
+<meta property="og:title" content="PropTech — Do bairro à carteira">
+<meta property="og:description" content="Como a tecnologia transforma o imóvel de tijolo em ativo financeiro — deck interativo com mapa, simuladores e checklists. Por José Edson da Costa.">
+<meta property="og:image" content="https://joseedson18jc.github.io/proptech-carteira/assets/og-cover.png">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PropTech — Do bairro à carteira">
+<meta name="twitter:description" content="Deck interativo: do dado do bairro à carteira de FIIs. Simuladores, heatmap, radar de regiões.">
+<meta name="twitter:image" content="https://joseedson18jc.github.io/proptech-carteira/assets/og-cover.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"LearningResource","name":"PropTech — Do bairro à carteira",
+"description":"Deck interativo sobre tecnologia imobiliária e fundos de investimento: do dado do bairro à carteira diversificada de FIIs.",
+"inLanguage":"pt-BR","author":{"@type":"Person","name":"José Edson da Costa"},
+"educationalLevel":"educacional","learningResourceType":"apresentação interativa",
+"about":["PropTech","Fundos Imobiliários","Mercado Imobiliário","Investimentos"]}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230A0E0B'/%3E%3Ccircle cx='16' cy='16' r='6' fill='%23CDFF57'/%3E%3C/svg%3E"><style>
 /* =====================================================================
    PROPTECH — DO BAIRRO À CARTEIRA · v3 "LÍQUIDA"
@@ -305,7 +322,76 @@ section>.wrap{position:relative;z-index:1}
   section{padding:64px 0}
   .quote{font-size:clamp(18px,5.4vw,24px)}
 }
-@media print{#topbar,#progress,#counter,.tooltip,.scrollcue,.orbs{display:none!important}}
+
+/* ---------- v3.5: palette / rail / map / lightbox / motion ---------- */
+.skip{position:fixed;top:-60px;left:20px;z-index:3000;background:var(--lime);color:#0A0E0B;font-weight:700;
+  font-size:13px;padding:11px 20px;border-radius:99px;transition:top .25s;text-decoration:none}
+.skip:focus{top:14px}
+:focus-visible{outline:2px solid var(--lime);outline-offset:3px;border-radius:6px}
+
+/* part rail */
+#rail{position:fixed;left:18px;top:50%;transform:translateY(-50%);z-index:900;display:flex;flex-direction:column;gap:14px}
+#rail a{display:flex;align-items:center;gap:10px;text-decoration:none}
+#rail .rl{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.16);transition:all .3s}
+#rail .rt{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--mut2);opacity:0;
+  transform:translateX(-6px);transition:all .25s;text-transform:uppercase;white-space:nowrap}
+#rail a:hover .rt{opacity:1;transform:none}
+#rail a.on .rl{background:var(--lime);box-shadow:0 0 10px rgba(205,255,87,.6)}
+#rail a.on .rt{opacity:1;transform:none;color:var(--lime)}
+@media(max-width:1240px){#rail{display:none}}
+
+/* palette */
+#palette{position:fixed;inset:0;z-index:2500;display:none;background:rgba(10,14,11,.72);backdrop-filter:blur(14px)}
+#palette.open{display:flex;align-items:flex-start;justify-content:center;padding:12vh 20px 20px}
+#palette .box{width:100%;max-width:580px;background:#0D120F;border:1px solid var(--ln2);border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 120px -20px rgba(0,0,0,.8)}
+#palette input{width:100%;background:transparent;border:none;outline:none;color:var(--txt);font-family:var(--sans);
+  font-size:17px;padding:20px 24px;border-bottom:1px solid var(--ln)}
+#palette input::placeholder{color:var(--mut2)}
+#palette .list{max-height:52vh;overflow-y:auto;padding:10px}
+#palette .grp{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--mut2);padding:14px 14px 8px;text-transform:uppercase}
+#palette .item{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:transparent;border:none;
+  color:var(--txt2);font-family:var(--sans);font-size:14.5px;padding:11px 14px;border-radius:12px;cursor:pointer}
+#palette .item .no{font-family:var(--mono);font-size:10px;color:var(--mut2);width:22px}
+#palette .item.sel{background:var(--srf2);color:var(--txt)}
+#palette .item.sel .no{color:var(--lime)}
+#palette .hintbar{display:flex;gap:18px;padding:12px 18px;border-top:1px solid var(--ln);font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.14em;color:var(--mut2)}
+#palette .hintbar b{color:var(--mut)}
+
+/* word reveal */
+.split .w{display:inline-block;opacity:0;transform:translateY(.55em);transition:opacity .6s cubic-bezier(.2,.65,.25,1),transform .6s cubic-bezier(.2,.65,.25,1);transition-delay:calc(var(--wi)*38ms)}
+.split.in .w{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.split .w{opacity:1;transform:none;transition:none}}
+
+/* lightbox */
+#lightbox{position:fixed;inset:0;z-index:2600;display:none;background:rgba(10,14,11,.92);backdrop-filter:blur(10px);
+  align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:5vh 4vw}
+#lightbox.open{display:flex}
+#lightbox img{max-width:min(1100px,92vw);max-height:76vh;border-radius:18px;object-fit:contain}
+#lightbox .lb-cap{font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.12em;max-width:640px;text-align:center;line-height:1.7}
+#lightbox .lb-x{position:absolute;top:22px;right:26px;background:transparent;border:1px solid var(--ln2);color:var(--txt);
+  border-radius:99px;font-size:13px;padding:10px 18px;cursor:pointer;font-family:var(--sans)}
+#lightbox .lb-x:hover{background:var(--lime);color:#0A0E0B;border-color:var(--lime)}
+.photo{cursor:zoom-in}
+
+/* mapa do bairro */
+.mz{cursor:pointer;transition:opacity .2s}
+.mz rect{transition:filter .25s}
+.mz:hover rect{filter:brightness(1.25)}
+.mz.sel rect{stroke:#F2F5EE;stroke-width:1.5}
+.map-legend{display:flex;align-items:center;gap:14px;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--mut)}
+.map-legend .g{width:150px;height:8px;border-radius:4px;background:linear-gradient(90deg,#FF8A6B,#FFB454,#B8E447,#CDFF57)}
+
+/* presets */
+.presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.presets button{font-size:11.5px;font-weight:600;color:var(--txt2);background:transparent;border:1px solid var(--ln);
+  border-radius:99px;padding:7px 15px;cursor:pointer;font-family:var(--sans);transition:all .2s}
+.presets button:hover{border-color:var(--ln2);color:var(--txt)}
+.presets button.on{background:var(--lime);color:#0A0E0B;border-color:var(--lime)}
+
+@media print{#topbar,#progress,#counter,.tooltip,.scrollcue,.orbs,#rail,#palette,#lightbox{display:none!important}}
+
 </style>
 </head>
 <body>
@@ -322,10 +408,21 @@ section>.wrap{position:relative;z-index:1}
       <a href="#fiis">FIIs</a><a href="#carteira">Carteira</a><a href="#simulador">Simulador</a>
     </nav>
     <a class="tb-cta" href="#simulador" style="margin-left:8px">Simular</a>
+    <button class="tb-cta" id="open-palette" type="button" style="margin-left:6px;background:transparent;color:var(--txt2);border:1px solid var(--ln2)">Índice ⌘K</button>
   </div>
 </header>
 
-<main>
+<a class="skip" href="#sumario">Pular para o conteúdo</a>
+<div id="rail" aria-label="Partes"></div>
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="Imagem ampliada"><button class="lb-x" type="button" id="lb-close">fechar ✕</button><img id="lb-img" alt=""><p class="lb-cap" id="lb-cap"></p></div>
+<div id="palette" role="dialog" aria-modal="true" aria-label="Índice da apresentação">
+  <div class="box">
+    <input id="pal-input" type="text" placeholder="Buscar seção… (ex: fiis, selic, simulador)" autocomplete="off">
+    <div class="list" id="pal-list"></div>
+    <div class="hintbar"><span><b>↑↓</b> navegar</span><span><b>enter</b> ir</span><span><b>esc</b> fechar</span></div>
+  </div>
+</div>
+<main id="conteudo">
 
 <!-- ============ 01 HERO ============ -->
 <section id="hero" data-title="Capa">
@@ -517,6 +614,33 @@ section>.wrap{position:relative;z-index:1}
         <div class="blk rv d4"><div class="bn">VAR 04</div><h3>Oferta nova</h3><p>Lançamentos preveem <b>concorrência futura</b> pela demanda.</p></div>
         <div class="blk rv d5"><div class="bn">VAR 05</div><h3>Infraestrutura</h3><p>Transporte e serviços mudam o <b>eixo de valorização</b>.</p></div>
         <div class="blk rv d6"><div class="bn">VAR 06</div><h3>Demanda local</h3><p>Perfil demográfico define o <b>produto certo</b> por rua.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06b O MAPA DO BAIRRO ============ -->
+<section id="mapa" data-title="O mapa do bairro">
+  <div class="wrap">
+    <div class="sechead"><span class="ghost">06</span>
+      <div class="kicker"><span class="n">06</span>PARTE 2 · O MAPA</div>
+      <h2 class="rv">A cidade como<br><em>cartografia de preço.</em></h2>
+      <p class="lead rv d1">Cada zona do mapa é uma decisão de alocação. Passe o cursor — ou toque — nas regiões para ler preço médio, valorização, vacância e velocidade de venda.</p>
+    </div>
+    <div class="grid g21">
+      <div class="chart rv d1">
+        <div class="ct"><span>São Paulo estilizado — preço por m²</span><span class="cs">interativo · ilustrativo</span></div>
+        <svg id="mapa-svg" viewBox="0 0 760 470" role="img" aria-label="Mapa de zonas de São Paulo por preço por metro quadrado"></svg>
+        <div class="map-legend"><span>R$ 5,9k</span><span class="g"></span><span>R$ 11,5k /m²</span></div>
+      </div>
+      <div>
+        <ul class="list">
+          <li class="rv d2"><span><b>Cor = nível de preço</b> — o gradiente vai do embra ao limão.</span></li>
+          <li class="rv d3"><span><b>Tamanho = volume de vendas</b> da região nos últimos 90 dias.</span></li>
+          <li class="rv d4"><span><b>O ponto pulsante</b> marca o centro expandido — onde o dado nasce mais denso.</span></li>
+          <li class="rv d5"><span>A matriz completa de métricas está logo abaixo, no <b>radar de regiões</b>.</span></li>
+        </ul>
+        <div class="quote rv d6" style="margin-top:36px;font-size:clamp(16px,1.8vw,21px)">No fundo, toda carteira imobiliária é um mapa com pesos.</div>
       </div>
     </div>
   </div>
@@ -936,6 +1060,11 @@ section>.wrap{position:relative;z-index:1}
       </div>
       <div class="chart rv d2">
         <div class="ct" style="font-size:13.5px"><span>Premissas</span></div>
+        <div class="presets" role="group" aria-label="Presets de perfil">
+          <button type="button" data-y="9.5" data-v="0.75">Conservador</button>
+          <button type="button" class="on" data-y="10.5" data-v="1.5">Moderado</button>
+          <button type="button" data-y="12" data-v="2.5">Arrojado</button>
+        </div>
         <div class="slider-row"><label>Aporte inicial</label><input type="range" id="sim-init" min="0" max="200000" step="5000" value="20000"><output id="sim-init-o">R$ 20 mil</output></div>
         <div class="slider-row"><label>Aporte mensal</label><input type="range" id="sim-month" min="0" max="10000" step="100" value="1000"><output id="sim-month-o">R$ 1.000</output></div>
         <div class="slider-row"><label>Yield anual</label><input type="range" id="sim-yield" min="6" max="16" step="0.25" value="10.5"><output id="sim-yield-o">10,5%</output></div>
@@ -1231,7 +1360,9 @@ const bio=new IntersectionObserver(es=>{
   });
 },{threshold:0.3});
 $$("#custo-chart .cbar").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="46";
-  const vt=g.querySelector(".v");vt.dataset.raw=v;vt.dataset.suf="%";bio.observe(g);});
+  const vt=g.querySelector(".cv");vt.dataset.raw=v;vt.dataset.suf="%";
+  const cl=g.querySelector(".cl");if(cl){cl.textContent=g.dataset.name;cl.setAttribute("fill","#8B9987");cl.setAttribute("font-size","12");}
+  bio.observe(g);});
 $$(".bbar").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="2.2";
   const vt=g.querySelector(".v");vt.dataset.raw=v;vt.dataset.suf=" dias";bio.observe(g);});
 $$(".pvp").forEach(g=>{const v=parseFloat(g.dataset.v);g.dataset.scale="170";
@@ -1246,6 +1377,7 @@ function showTip(html,x,y){ tip.innerHTML=html; tip.style.opacity="1";
   tip.style.left=clamp(x+14,8,innerWidth-r.width-8)+"px";
   tip.style.top=clamp(y-r.height-12,8,innerHeight-r.height-8)+"px"; }
 function hideTip(){ tip.style.opacity="0"; }
+window.showTip=showTip; window.hideTip=hideTip;
 
 /* ============ heatmap ============ */
 (function(){
@@ -1664,6 +1796,205 @@ function hideTip(){ tip.style.opacity="0"; }
 })();
 
 })();
+
+/* ============ v3.5 extras ============ */
+(function(){
+"use strict";
+const $$2=(s,c)=>Array.from((c||document).querySelectorAll(s));
+
+/* ---- word reveal on h2/h1 ---- */
+(function(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  $$2("h2, #hero h1").forEach(h=>{
+    let i=0;
+    const walk=(node)=>{
+      Array.from(node.childNodes).forEach(ch=>{
+        if(ch.nodeType===3){
+          const frag=document.createDocumentFragment();
+          ch.textContent.split(/(\s+)/).forEach(tok=>{
+            if(/^\s+$/.test(tok)||tok==="") frag.appendChild(document.createTextNode(tok));
+            else{const sp=document.createElement("span");sp.className="w";sp.style.setProperty("--wi",i++);sp.textContent=tok;frag.appendChild(sp);}
+          });
+          node.replaceChild(frag,ch);
+        } else if(ch.nodeType===1 && ch.tagName!=="BR") walk(ch);
+      });
+    };
+    walk(h); h.classList.add("split");
+  });
+  const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");so.unobserve(e.target);}}),{threshold:0.5});
+  $$2(".split").forEach(h=>so.observe(h));
+  /* already-visible ones */
+  setTimeout(()=>$$2(".split").forEach(h=>{const r=h.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0)h.classList.add("in");}),100);
+})();
+
+/* ---- photo parallax ---- */
+(function(){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const ph=$$2(".photo");
+  let tick=false;
+  function upd(){
+    tick=false;
+    ph.forEach(p=>{
+      const r=p.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight) return;
+      const off=(r.top+r.height/2-innerHeight/2)/innerHeight;
+      p.style.transform="translateY("+(-off*26).toFixed(1)+"px)";
+    });
+  }
+  addEventListener("scroll",()=>{if(!tick){tick=true;requestAnimationFrame(upd);}},{passive:true});
+})();
+
+/* ---- lightbox ---- */
+(function(){
+  const lb=document.getElementById("lightbox"),img=document.getElementById("lb-img"),cap=document.getElementById("lb-cap");
+  if(!lb) return;
+  $$2(".photo img").forEach(im=>{
+    im.parentElement.addEventListener("click",()=>{
+      img.src=im.src; img.alt=im.alt||"";
+      const c=im.parentElement.querySelector(".cap");
+      cap.textContent=c?c.textContent:"";
+      lb.classList.add("open");
+    });
+  });
+  function close(){lb.classList.remove("open");}
+  document.getElementById("lb-close").addEventListener("click",close);
+  lb.addEventListener("click",e=>{if(e.target===lb)close();});
+  addEventListener("keydown",e=>{if(e.key==="Escape"&&lb.classList.contains("open"))close();});
+})();
+
+/* ---- simulator presets ---- */
+(function(){
+  const btns=$$2(".presets button");
+  if(!btns.length) return;
+  btns.forEach(b=>b.addEventListener("click",()=>{
+    const y=document.getElementById("sim-yield"),v=document.getElementById("sim-val");
+    y.value=b.dataset.y; v.value=b.dataset.v;
+    y.dispatchEvent(new Event("input")); v.dispatchEvent(new Event("input"));
+    btns.forEach(x=>x.classList.toggle("on",x===b));
+  }));
+})();
+
+/* ---- mapa do bairro ---- */
+(function(){
+  const svg=document.getElementById("mapa-svg"); if(!svg) return;
+  const NS="http://www.w3.org/2000/svg";
+  const zones=[
+    {n:"Zona Norte",x:210,y:26,w:300,h:96,pr:7.2,val:5.8,vac:35,dom:132,vol:52},
+    {n:"Centro expandido",x:240,y:140,w:190,h:104,pr:11.5,val:7.8,vac:22,dom:84,vol:96},
+    {n:"Zona Leste",x:452,y:150,w:220,h:130,pr:6.8,val:7.1,vac:26,dom:97,vol:74},
+    {n:"Zona Oeste / FL",x:52,y:118,w:168,h:110,pr:9.8,val:8.8,vac:10,dom:57,vol:88},
+    {n:"Zona Sul",x:230,y:262,w:220,h:120,pr:8.9,val:6.4,vac:30,dom:114,vol:60},
+    {n:"ABC / Guarulhos",x:470,y:300,w:180,h:88,pr:5.9,val:5.2,vac:42,dom:145,vol:38},
+    {n:"Campinas / RMC",x:580,y:30,w:150,h:96,pr:7.8,val:7.4,vac:16,dom:66,vol:44}
+  ];
+  const ramp=pr=>{const t=(pr-5.9)/(11.5-5.9);
+    if(t>.75)return"#CDFF57"; if(t>.5)return"#B8E447"; if(t>.3)return"#FFB454"; return"#FF8A6B";};
+  function el(t,at,parent){const e=document.createElementNS(NS,t);for(const k in at)e.setAttribute(k,at[k]);(parent||svg).appendChild(e);return e;}
+  /* street grid */
+  const defs=el("defs",{});
+  const pat=el("pattern",{id:"streets",width:"34",height:"34",patternUnits:"userSpaceOnUse"},defs);
+  el("path",{d:"M34 0H0V34",fill:"none",stroke:"rgba(255,255,255,.05)","stroke-width":"1"},pat);
+  el("rect",{x:30,y:14,width:700,height:412,rx:22,fill:"url(#streets)",stroke:"rgba(255,255,255,.08)"});
+  /* avenidas */
+  el("path",{d:"M30 250 C200 240 380 260 730 236",fill:"none",stroke:"rgba(255,255,255,.07)","stroke-width":"7",filter:"blur(1px)"});
+  el("path",{d:"M420 14 C400 150 440 320 424 426",fill:"none",stroke:"rgba(255,255,255,.06)","stroke-width":"6"});
+  /* river */
+  el("path",{d:"M30 320 C160 300 240 350 380 330 C520 310 600 350 730 322",fill:"none",stroke:"rgba(143,160,141,.14)","stroke-width":"10",filter:"blur(2px)"});
+  /* zones */
+  zones.forEach(z=>{
+    const g=el("g",{class:"mz","data-n":z.n});
+    const op=0.16+(z.pr-5.9)/5.6*0.34;
+    el("rect",{x:z.x,y:z.y,width:z.w,height:z.h,rx:14,fill:ramp(z.pr),opacity:op.toFixed(2),stroke:ramp(z.pr),"stroke-opacity":".55"},g);
+    el("text",{x:z.x+14,y:z.y+24,fill:"#F2F5EE","font-size":"12.5","font-weight":"700"},g).textContent=z.n;
+    el("text",{x:z.x+14,y:z.y+44,fill:"#8B9987","font-size":"11","font-family":"ui-monospace"},g).textContent="R$ "+z.pr.toFixed(1).replace(".",",")+"k/m²";
+    const dot=el("circle",{cx:z.x+z.w-16,cy:z.y+18,r:3+Math.sqrt(z.vol)/4.5,fill:ramp(z.pr),opacity:.85},g);
+    const html=(x,y)=>"<b>"+z.n+"</b><br>R$ "+z.pr.toFixed(1).replace(".",",")+"k/m² · "+(z.val>0?"+":"")+z.val.toFixed(1).replace(".",",")+"% 12m<br><span class=\"tt-sub\">vacância "+z.vac+"% · "+z.dom+" dias p/ vender · "+z.vol+" vendas/90d</span>";
+    g.addEventListener("mousemove",e=>showTip(html(e.clientX,e.clientY),e.clientX,e.clientY));
+    g.addEventListener("mouseleave",hideTip);
+    g.addEventListener("touchstart",e=>{const t=e.touches[0];showTip(html(t.clientX,t.clientY),t.clientX,t.clientY);setTimeout(hideTip,2400);},{passive:true});
+  });
+  /* pulsing core dot */
+  const pulse=el("circle",{cx:335,cy:192,r:5,fill:"#CDFF57"});
+  const ring=el("circle",{cx:335,cy:192,r:5,fill:"none",stroke:"#CDFF57","stroke-width":"1.5",opacity:".8"});
+  if(!matchMedia("(prefers-reduced-motion:reduce)").matches){
+    ring.style.animation="mapPulse 1.8s ease-out infinite";
+  }
+  const st=document.createElement("style");
+  st.textContent="@keyframes mapPulse{from{r:5;opacity:.8}to{r:22;opacity:0}}";
+  svg.appendChild(st);
+})();
+
+/* ---- part rail ---- */
+(function(){
+  const rail=document.getElementById("rail"); if(!rail) return;
+  const parts=[["1","ativo","O ativo"],["2","bairro","O bairro"],["3","stack","A stack"],["4","fiis","FIIs"],["5","carteira","Carteira"],["6","riscos","Riscos"]];
+  parts.forEach(p=>{
+    const a=document.createElement("a");a.href="#"+p[1];
+    a.innerHTML='<span class="rt">'+p[0]+" · "+p[2]+'</span><span class="rl"></span>';
+    rail.appendChild(a);
+  });
+  const links=Array.from(rail.children);
+  const secs=parts.map(p=>document.getElementById(p[1])).filter(Boolean);
+  const ro=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){
+      const idx=secs.indexOf(e.target);
+      links.forEach((l,i)=>l.classList.toggle("on",i===idx));
+    }});
+  },{threshold:0.25});
+  secs.forEach(x=>ro.observe(x));
+})();
+
+/* ---- index palette ---- */
+(function(){
+  const pal=document.getElementById("palette"),input=document.getElementById("pal-input"),list=document.getElementById("pal-list");
+  if(!pal) return;
+  const secs=$$2("section[data-title], footer[data-title]");
+  const PARTS={sumario:"SUMÁRIO",ativo:"PARTE 1 · O ATIVO",comparativo:"PARTE 1 · O ATIVO",agora:"PARTE 1 · O ATIVO",
+    bairro:"PARTE 2 · O BAIRRO",mapa:"PARTE 2 · O BAIRRO",heatmap:"PARTE 2 · O BAIRRO",avm:"PARTE 2 · O BAIRRO",
+    stack:"PARTE 3 · A STACK",ibuying:"PARTE 3 · A STACK",credito:"PARTE 3 · A STACK",fractional:"PARTE 3 · A STACK",token:"PARTE 3 · A STACK",
+    fiis:"PARTE 4 · FIIs",indicadores:"PARTE 4 · FIIs",selic:"PARTE 4 · FIIs",
+    carteira:"PARTE 5 · CARTEIRA",simulador:"PARTE 5 · CARTEIRA",divers:"PARTE 5 · CARTEIRA",
+    riscos:"PARTE 6 · RISCOS",tributacao:"PARTE 6 · RISCOS",cases:"PARTE 6 · RISCOS",tendencias:"PARTE 6 · RISCOS",checklist:"PARTE 6 · RISCOS",
+    conclusao:"CONCLUSÃO",fim:"FIM",hero:"CAPA"};
+  let items=[],sel=0;
+  function norm(t){return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+  function build(q){
+    q=norm(q||"");
+    const map=new Map();
+    list.innerHTML="";items=[];
+    secs.forEach((s,i)=>{
+      const title=(s.dataset.title||s.id), part=PARTS[s.id]||"—";
+      const hay=norm(title+" "+part+" "+s.id);
+      if(q&&!hay.includes(q)) return;
+      if(!map.has(part)){const g=document.createElement("div");g.className="grp";g.textContent=part;list.appendChild(g);map.set(part,g);}
+      const b=document.createElement("button");b.type="button";b.className="item";
+      b.innerHTML='<span class="no">'+String(i+1).padStart(2,"0")+'</span>'+title;
+      b.addEventListener("click",()=>{go2(i);});
+      list.appendChild(b);items.push({b,i});
+    });
+    if(!items.length){list.innerHTML='<div class="grp">nada encontrado</div>';}
+    sel=0;paint();
+  }
+  function paint(){items.forEach((it,i)=>it.b.classList.toggle("sel",i===sel));
+    if(items[sel])items[sel].b.scrollIntoView({block:"nearest"});}
+  function go2(i){close();secs[i].scrollIntoView({behavior:"smooth",block:"start"});}
+  function open(){pal.classList.add("open");input.value="";build("");setTimeout(()=>input.focus(),30);}
+  function close(){pal.classList.remove("open");}
+  document.getElementById("open-palette").addEventListener("click",open);
+  pal.addEventListener("click",e=>{if(e.target===pal)close();});
+  addEventListener("keydown",e=>{
+    if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();pal.classList.contains("open")?close():open();}
+    else if(e.key==="Escape"&&pal.classList.contains("open"))close();
+    else if(pal.classList.contains("open")&&items.length){
+      if(e.key==="ArrowDown"){e.preventDefault();sel=Math.min(items.length-1,sel+1);paint();}
+      else if(e.key==="ArrowUp"){e.preventDefault();sel=Math.max(0,sel-1);paint();}
+      else if(e.key==="Enter"){e.preventDefault();items[sel]&&go2(items[sel].i);}
+    }
+  });
+  input.addEventListener("input",()=>build(input.value));
+})();
+})();
+
 </script>
 </body>
 </html>
